@@ -1,0 +1,26 @@
+========================================================================
+SISTEMA DE GESTÃO E ESCALA DE PLANTÕES HOSPITALARES - VERSÃO EXECUTÁVEL
+========================================================================
+
+Este pacote contém a versão pronta para uso local e offline do sistema.
+
+COMO EXECUTAR NO WINDOWS:
+1. Dê um duplo clique em "INICIAR_SISTEMA.bat" (ou "INICIAR_SILENCIOSO.vbs").
+2. O sistema abrirá automaticamente em modo de aplicativo desktop (janela própria
+   sem abas ou barras de pesquisa, idêntico a um programa .EXE nativo).
+3. Para colocar um atalho na sua Área de Trabalho, execute:
+   "CRIAR_ATALHO_AREA_DE_TRABALHO.bat".
+
+OPÇÃO NATIVA ELECTRON (.EXE):
+Se você tiver o Node.js instalado na máquina de desenvolvimento e quiser abrir
+diretamente via Electron Desktop, execute na pasta do projeto:
+   npm run electron:start
+
+SEGURANÇA & DADOS:
+- Todos os dados ficam salvos localmente e com segurança no computador.
+- Para realizar backup ou restauração de dados, acesse o menu lateral "Backup & Dados".
+
+CREDENCIAIS INICIAIS:
+- Administrador: login 'admin' | senha 'esc@l@'
+- Usuário Padrão: login 'padrao' | senha 'esc@l@'
+========================================================================

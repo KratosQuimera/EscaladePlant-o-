@@ -1,0 +1,6 @@
+{
+  "name": "Sistema de Gestão de Plantões",
+  "description": "Sistema web local completo de gestão, escala e monitoramento diário de plantões, profissionais, setores, presenças, férias e atestados com controle de acesso por hierarquia.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
