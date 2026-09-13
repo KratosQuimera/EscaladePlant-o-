@@ -1,4 +1,4 @@
-export type UserRole = 'ADM' | 'PADRÃO' | 'PADRAO';
+export type UserRole = 'ADM' | 'GESTOR' | 'PADRÃO' | 'PADRAO';
 
 export interface User {
   id: string;
@@ -41,7 +41,7 @@ export interface Profissional {
   observacao?: string; // Campo sensível
   // Acesso e usuário vinculado no sistema
   usuario_id?: string;
-  tipo_usuario?: 'SEM_ACESSO' | 'ADM' | 'PADRÃO';
+  tipo_usuario?: 'SEM_ACESSO' | UserRole;
   login_usuario?: string;
   criado_em: string;
 }

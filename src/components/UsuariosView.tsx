@@ -244,9 +244,11 @@ export const UsuariosView: React.FC<UsuariosViewProps> = ({
                   <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase border ${
                     u.tipo_acesso === 'ADM'
                       ? 'bg-amber-100 text-amber-900 border-amber-300'
-                      : 'bg-blue-50 text-blue-800 border-blue-200'
+                      : u.tipo_acesso === 'GESTOR'
+                      ? 'bg-indigo-100 text-indigo-900 border-indigo-300'
+                      : 'bg-emerald-50 text-emerald-800 border-emerald-200'
                   }`}>
-                    {u.tipo_acesso}
+                    {u.tipo_acesso === 'ADM' ? '👑 ADM' : u.tipo_acesso === 'GESTOR' ? '📋 GESTOR' : '🩺 PLANTONISTA'}
                   </span>
                 </td>
 
@@ -360,8 +362,9 @@ export const UsuariosView: React.FC<UsuariosViewProps> = ({
                   onChange={(e) => setTipoAcesso(e.target.value as UserRole)}
                   className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:outline-none cursor-pointer font-bold"
                 >
-                  <option value="PADRÃO">USUÁRIO PADRÃO (Somente Leitura)</option>
-                  <option value="ADM">ADMINISTRADOR (Acesso Total)</option>
+                  <option value="PADRÃO">🩺 PLANTONISTA / USUÁRIO PADRÃO (Portal e Consultas)</option>
+                  <option value="GESTOR">📋 GESTOR / COORDENAÇÃO (Escalas, Trocas, Presenças)</option>
+                  <option value="ADM">👑 ADMINISTRADOR (Acesso Total e Configurações)</option>
                 </select>
               </div>
 

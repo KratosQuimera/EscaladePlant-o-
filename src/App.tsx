@@ -4,7 +4,9 @@ import {
   Clock, 
   CalendarDays, 
   Users, 
-  Menu 
+  Menu,
+  UserCheck,
+  ArrowLeftRight
 } from 'lucide-react';
 import { db } from './services/db';
 import { User, Profissional } from './types';
@@ -29,6 +31,7 @@ import { OfflineIndicator } from './components/OfflineIndicator';
 import { TrocasView } from './components/TrocasView';
 import { IndisponibilidadesView } from './components/IndisponibilidadesView';
 import { PortalColaboradorView } from './components/PortalColaboradorView';
+import { ManualView } from './components/ManualView';
 import { getVersionInfo, VersionInfo } from './services/versionService';
 
 export default function App() {
@@ -54,12 +57,6 @@ export default function App() {
     const sessionUser = db.getCurrentUser();
     if (sessionUser) {
       setCurrentUser(sessionUser);
-    } else {
-      // Login padrão para facilitar visualização imediata
-      const user = db.login('admin', 'esc@l@').user;
-      if (user) {
-        setCurrentUser(user);
-      }
     }
 
     // Assinatura em tempo real da nuvem (acesso web compartilhado)
@@ -91,14 +88,28 @@ export default function App() {
     setCurrentUser(null);
   };
 
-  // Alternar rapidamente entre ADM e Usuário Padrão para testes de permissão
+  const handleLoginSuccess = (user: User) => {
+    setCurrentUser(user);
+    if (user.tipo_acesso === 'PADRÃO' || user.tipo_acesso === 'PADRAO') {
+      setActiveTab('portal_colaborador');
+    } else {
+      setActiveTab('dashboard');
+    }
+  };
+
+  // Alternar rapidamente entre perfis (ADM -> GESTOR -> PADRÃO -> ADM) para testes de permissão
   const handleSwitchUser = () => {
-    const nextRole = currentUser?.tipo_acesso === 'ADM' ? 'padrao' : 'admin';
-    const res = db.login(nextRole, 'esc@l@');
+    let nextLogin = 'admin';
+    if (currentUser?.tipo_acesso === 'ADM') nextLogin = 'gestor';
+    else if (currentUser?.tipo_acesso === 'GESTOR') nextLogin = 'padrao';
+    else nextLogin = 'admin';
+
+    const res = db.login(nextLogin, 'esc@l@');
     if (res.user) {
       setCurrentUser(res.user);
-      // Se era aba administrativa e trocou para padrão, redireciona para dashboard
-      if (nextRole === 'padrao' && ['usuarios', 'auditoria', 'backup'].includes(activeTab)) {
+      if (res.user.tipo_acesso === 'PADRÃO' || res.user.tipo_acesso === 'PADRAO') {
+        setActiveTab('portal_colaborador');
+      } else if (res.user.tipo_acesso === 'GESTOR' && ['usuarios', 'auditoria', 'backup'].includes(activeTab)) {
         setActiveTab('dashboard');
       }
     }
@@ -110,7 +121,7 @@ export default function App() {
   };
 
   if (!currentUser) {
-    return <LoginView onLoginSuccess={(u) => setCurrentUser(u)} />;
+    return <LoginView onLoginSuccess={handleLoginSuccess} />;
   }
 
   return (
@@ -259,24 +270,58 @@ export default function App() {
               onRefreshAll={handleRefreshData}
             />
           )}
+
+          {activeTab === 'manual' && (
+            <ManualView
+              key={`manual-${refreshCount}`}
+              currentUser={currentUser}
+              onNavigateTab={(tabId) => setActiveTab(tabId)}
+            />
+          )}
         </main>
 
-        {/* Barra de Navegação Inferior Exclusiva para Celular (Mobile Bottom Navigation) */}
+        {/* Barra de Navegação Inferior Exclusiva para Celular (Mobile Bottom Navigation Adaptativa ao Perfil) */}
         <nav
           id="mobile-bottom-navigation"
           aria-label="Navegação rápida celular"
           className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-slate-200 px-2 py-1 flex items-center justify-around shadow-lg"
         >
-          <button
-            id="mobile-tab-dashboard"
-            onClick={() => { setActiveTab('dashboard'); setIsMobileMenuOpen(false); }}
-            className={`flex flex-col items-center justify-center flex-1 py-1 min-h-[44px] rounded-lg transition-colors ${
-              activeTab === 'dashboard' ? 'text-emerald-600 font-bold' : 'text-slate-500 hover:text-slate-800'
-            }`}
-          >
-            <LayoutDashboard className="w-5 h-5" />
-            <span className="text-[10px] mt-0.5">Painel</span>
-          </button>
+          {currentUser.tipo_acesso === 'PADRÃO' || currentUser.tipo_acesso === 'PADRAO' ? (
+            <>
+              <button
+                id="mobile-tab-portal"
+                onClick={() => { setActiveTab('portal_colaborador'); setIsMobileMenuOpen(false); }}
+                className={`flex flex-col items-center justify-center flex-1 py-1 min-h-[44px] rounded-lg transition-colors ${
+                  activeTab === 'portal_colaborador' ? 'text-emerald-600 font-bold' : 'text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                <UserCheck className="w-5 h-5" />
+                <span className="text-[10px] mt-0.5">Meu Plantão</span>
+              </button>
+
+              <button
+                id="mobile-tab-trocas"
+                onClick={() => { setActiveTab('trocas'); setIsMobileMenuOpen(false); }}
+                className={`flex flex-col items-center justify-center flex-1 py-1 min-h-[44px] rounded-lg transition-colors ${
+                  activeTab === 'trocas' ? 'text-emerald-600 font-bold' : 'text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                <ArrowLeftRight className="w-5 h-5" />
+                <span className="text-[10px] mt-0.5">Trocas</span>
+              </button>
+            </>
+          ) : (
+            <button
+              id="mobile-tab-dashboard"
+              onClick={() => { setActiveTab('dashboard'); setIsMobileMenuOpen(false); }}
+              className={`flex flex-col items-center justify-center flex-1 py-1 min-h-[44px] rounded-lg transition-colors ${
+                activeTab === 'dashboard' ? 'text-emerald-600 font-bold' : 'text-slate-500 hover:text-slate-800'
+              }`}
+            >
+              <LayoutDashboard className="w-5 h-5" />
+              <span className="text-[10px] mt-0.5">Painel</span>
+            </button>
+          )}
 
           <button
             id="mobile-tab-escala"
@@ -300,16 +345,18 @@ export default function App() {
             <span className="text-[10px] mt-0.5">Calendário</span>
           </button>
 
-          <button
-            id="mobile-tab-profissionais"
-            onClick={() => { setActiveTab('profissionais'); setIsMobileMenuOpen(false); }}
-            className={`flex flex-col items-center justify-center flex-1 py-1 min-h-[44px] rounded-lg transition-colors ${
-              activeTab === 'profissionais' ? 'text-emerald-600 font-bold' : 'text-slate-500 hover:text-slate-800'
-            }`}
-          >
-            <Users className="w-5 h-5" />
-            <span className="text-[10px] mt-0.5">Equipe</span>
-          </button>
+          {currentUser.tipo_acesso !== 'PADRÃO' && currentUser.tipo_acesso !== 'PADRAO' && (
+            <button
+              id="mobile-tab-profissionais"
+              onClick={() => { setActiveTab('profissionais'); setIsMobileMenuOpen(false); }}
+              className={`flex flex-col items-center justify-center flex-1 py-1 min-h-[44px] rounded-lg transition-colors ${
+                activeTab === 'profissionais' ? 'text-emerald-600 font-bold' : 'text-slate-500 hover:text-slate-800'
+              }`}
+            >
+              <Users className="w-5 h-5" />
+              <span className="text-[10px] mt-0.5">Equipe</span>
+            </button>
+          )}
 
           <button
             id="mobile-tab-menu-mais"

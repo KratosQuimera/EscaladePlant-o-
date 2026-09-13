@@ -63,6 +63,8 @@ export const EscalaView: React.FC<EscalaViewProps> = ({
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const isAdmin = currentUser?.tipo_acesso === 'ADM';
+  const isGestor = currentUser?.tipo_acesso === 'GESTOR';
+  const canManage = isAdmin || isGestor;
 
   const setores = db.getSetores().filter(s => s.ativo);
   const cargos = db.getCargos().filter(c => c.ativo);
@@ -104,8 +106,8 @@ export const EscalaView: React.FC<EscalaViewProps> = ({
 
   // Handler de Presença Imediata (Requirement 16)
   const handleMarcarPresente = (escala: Escala) => {
-    if (!isAdmin) {
-      alert('Acesso negado. Esta função requer privilégios de administrador.');
+    if (!canManage) {
+      alert('Acesso negado. Esta função requer privilégios de gestor ou administrador.');
       return;
     }
     const res = db.registrarPresenca(escala.id);
@@ -119,7 +121,7 @@ export const EscalaView: React.FC<EscalaViewProps> = ({
 
   // Abrir Modal de Ausência (Requirement 17)
   const handleAbrirAusencia = (escala: Escala, prof: Profissional) => {
-    if (!isAdmin) return;
+    if (!canManage) return;
     setSelectedEscala(escala);
     setSelectedProfissional(prof);
     setModalAusenciaOpen(true);
@@ -127,14 +129,14 @@ export const EscalaView: React.FC<EscalaViewProps> = ({
 
   // Abrir Modal de Férias (Requirement 18)
   const handleAbrirFerias = (prof: Profissional) => {
-    if (!isAdmin) return;
+    if (!canManage) return;
     setSelectedProfissional(prof);
     setModalFeriasOpen(true);
   };
 
   // Abrir Modal de Atestado (Requirement 19)
   const handleAbrirAtestado = (prof: Profissional) => {
-    if (!isAdmin) return;
+    if (!canManage) return;
     setSelectedProfissional(prof);
     setModalAtestadoOpen(true);
   };
@@ -195,7 +197,7 @@ export const EscalaView: React.FC<EscalaViewProps> = ({
         <div>
           <h2 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2 flex-wrap">
             <span>ESCALA & REGISTRO DIÁRIO DE PLANTÃO</span>
-            {!isAdmin && (
+            {!canManage && (
               <span className="text-[10px] sm:text-[11px] font-normal px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
                 Modo Consulta (Somente Leitura)
               </span>
@@ -620,9 +622,9 @@ export const EscalaView: React.FC<EscalaViewProps> = ({
                 </div>
 
                 {/* Botões de Ação Touch-Friendly no Celular */}
-                {isAdmin && (
+                {canManage && (
                   <div className="pt-1 border-t border-slate-100">
-                    <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Ações Rápidas de Registro (ADM)</p>
+                    <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Ações Rápidas de Registro ({isAdmin ? 'ADM' : 'GESTOR'})</p>
                     <div className="grid grid-cols-2 gap-1.5">
                       {/* PRESENTE */}
                       <button
@@ -695,8 +697,8 @@ export const EscalaView: React.FC<EscalaViewProps> = ({
                 <th className="py-3 px-3">Setor</th>
                 <th className="py-3 px-3">Horário / Turno</th>
                 <th className="py-3 px-3">Situação Atual</th>
-                {isAdmin ? (
-                  <th className="py-3 px-4 text-center">Registro do Plantão (Ações ADM)</th>
+                {canManage ? (
+                  <th className="py-3 px-4 text-center">Registro do Plantão (Ações Coordenação)</th>
                 ) : (
                   <th className="py-3 px-4 text-center">Status</th>
                 )}
@@ -803,7 +805,7 @@ export const EscalaView: React.FC<EscalaViewProps> = ({
                             <span>Trocar</span>
                           </button>
 
-                          {isAdmin ? (
+                          {canManage ? (
                             <div className="inline-flex items-center gap-1 p-1 bg-slate-50 rounded-lg border border-slate-200 shadow-2xs">
                               {/* PRESENTE */}
                               <button

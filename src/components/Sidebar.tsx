@@ -1,26 +1,25 @@
 import React from 'react';
-import { 
-  LayoutDashboard, 
-  CalendarDays, 
-  Clock, 
-  Users, 
-  Building2, 
-  Briefcase, 
-  FileText, 
-  History, 
-  ShieldAlert, 
-  UserCog, 
-  HardDrive, 
-  LogOut, 
+import {
+  LayoutDashboard,
+  Clock,
+  CalendarDays,
+  UserCheck,
+  ArrowLeftRight,
+  CalendarOff,
+  Users,
+  Building2,
+  History,
+  FileText,
+  UserCog,
+  ShieldAlert,
+  HardDrive,
+  BookOpen,
+  LogOut,
   KeyRound,
   ShieldCheck,
-  UserCheck,
-  Sparkles,
   RefreshCw,
-  Tag,
   X,
-  ArrowLeftRight,
-  CalendarOff
+  Stethoscope
 } from 'lucide-react';
 import { User } from '../types';
 import { VersionInfo } from '../services/versionService';
@@ -51,6 +50,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onCloseMobile,
 }) => {
   const isAdmin = currentUser?.tipo_acesso === 'ADM';
+  const isGestor = currentUser?.tipo_acesso === 'GESTOR';
+  const isPadrao = !isAdmin && !isGestor;
 
   const handleSelectTab = (tabId: string) => {
     setActiveTab(tabId);
@@ -59,24 +60,54 @@ export const Sidebar: React.FC<SidebarProps> = ({
     }
   };
 
-  const menuGeral = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  // Itens de menu para PLANTONISTA / USUÁRIO PADRÃO
+  const menuPlantonista = [
+    { id: 'portal_colaborador', label: 'Portal do Colaborador', icon: UserCheck, badge: 'Meu Plantão' },
+    { id: 'trocas', label: 'Trocas & Permutas', icon: ArrowLeftRight },
+    { id: 'indisponibilidades', label: 'Minhas Indisponibilidades', icon: CalendarOff },
+    { id: 'escala', label: 'Escala Diária (Consulta)', icon: Clock },
+    { id: 'calendario', label: 'Calendário Mensal', icon: CalendarDays },
+    { id: 'profissionais', label: 'Equipe Hospitalar', icon: Users },
+    { id: 'manual', label: 'Manual & Ajuda', icon: BookOpen, badge: 'Guia' },
+  ];
+
+  // Itens de menu para GESTOR / COORDENAÇÃO
+  const menuGestor = [
+    { id: 'dashboard', label: 'Dashboard Operacional', icon: LayoutDashboard },
+    { id: 'escala', label: 'Escala Diária', icon: Clock },
+    { id: 'calendario', label: 'Calendário de Plantões', icon: CalendarDays },
+    { id: 'trocas', label: 'Trocas & Permutas', icon: ArrowLeftRight, badge: 'Homologar' },
+    { id: 'indisponibilidades', label: 'Indisponibilidades Equipe', icon: CalendarOff },
+    { id: 'portal_colaborador', label: 'Portal do Colaborador', icon: UserCheck },
+    { id: 'profissionais', label: 'Profissionais', icon: Users },
+    { id: 'setores_cargos', label: 'Setores e Cargos', icon: Building2 },
+    { id: 'historico', label: 'Histórico de Ocorrências', icon: History },
+    { id: 'relatorios', label: 'Relatórios & Atestados', icon: FileText },
+    { id: 'manual', label: 'Manual & Ajuda', icon: BookOpen },
+  ];
+
+  // Itens de menu para ADMINISTRADOR (ADM)
+  const menuAdminGeral = [
+    { id: 'dashboard', label: 'Dashboard Geral', icon: LayoutDashboard },
     { id: 'escala', label: 'Escala Diária', icon: Clock },
     { id: 'calendario', label: 'Calendário', icon: CalendarDays },
-    { id: 'portal_colaborador', label: 'Portal do Colaborador', icon: UserCheck, badge: 'Meu Plantão' },
+    { id: 'portal_colaborador', label: 'Portal do Colaborador', icon: UserCheck, badge: 'Plantões' },
     { id: 'trocas', label: 'Trocas & Permutas', icon: ArrowLeftRight },
     { id: 'indisponibilidades', label: 'Indisponibilidades', icon: CalendarOff },
     { id: 'profissionais', label: 'Profissionais', icon: Users },
     { id: 'setores_cargos', label: 'Setores e Cargos', icon: Building2 },
     { id: 'historico', label: 'Histórico', icon: History },
     { id: 'relatorios', label: 'Relatórios', icon: FileText },
+    { id: 'manual', label: 'Manual & Ajuda', icon: BookOpen, badge: 'Docs' },
   ];
 
-  const menuAdmin = [
-    { id: 'usuarios', label: 'Usuários', icon: UserCog },
-    { id: 'auditoria', label: 'Auditoria', icon: ShieldAlert },
-    { id: 'backup', label: 'Backup & Dados', icon: HardDrive },
+  const menuAdminExclusivo = [
+    { id: 'usuarios', label: 'Gestão de Usuários', icon: UserCog },
+    { id: 'auditoria', label: 'Auditoria & Logs', icon: ShieldAlert },
+    { id: 'backup', label: 'Backup & Restauração', icon: HardDrive },
   ];
+
+  const menuItems = isPadrao ? menuPlantonista : isGestor ? menuGestor : menuAdminGeral;
 
   return (
     <>
@@ -131,14 +162,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
         </div>
 
-      {/* Navigation */}
-      <div className="flex-1 overflow-y-auto px-3 py-4 space-y-6">
-        <div>
-          <p className="px-3 text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-2">
-            Operacional
-          </p>
-          <nav className="space-y-1">
-              {menuGeral.map(item => {
+        {/* Navigation */}
+        <div className="flex-1 overflow-y-auto px-3 py-4 space-y-5">
+          <div>
+            <div className="px-3 flex items-center justify-between mb-2">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                {isPadrao ? 'Área do Plantonista' : isGestor ? 'Gestão da Equipe' : 'Operacional'}
+              </p>
+              {isPadrao && <Stethoscope className="w-3.5 h-3.5 text-emerald-400" />}
+            </div>
+
+            <nav className="space-y-1">
+              {menuItems.map(item => {
                 const Icon = item.icon;
                 const isActive = activeTab === item.id;
                 return (
@@ -146,9 +181,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     key={item.id}
                     id={`nav-btn-${item.id}`}
                     onClick={() => handleSelectTab(item.id)}
-                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-all ${
+                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
                       isActive
-                        ? 'bg-emerald-600 text-white shadow-sm'
+                        ? 'bg-emerald-600 text-white shadow-sm font-bold'
                         : 'text-slate-300 hover:bg-slate-800 hover:text-white'
                     }`}
                   >
@@ -158,7 +193,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     </div>
                     {item.badge && (
                       <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-tight ${
-                        isActive ? 'bg-white/20 text-white' : 'bg-emerald-500/20 text-emerald-400'
+                        isActive ? 'bg-white/25 text-white' : 'bg-emerald-500/20 text-emerald-400'
                       }`}>
                         {item.badge}
                       </span>
@@ -169,17 +204,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </nav>
           </div>
 
-          {/* Admin Restricted Section */}
+          {/* Seção Exclusiva para ADM */}
           {isAdmin && (
-            <div>
+            <div className="pt-2 border-t border-slate-800/80">
               <div className="px-3 flex items-center justify-between mb-2">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-amber-400">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-amber-400">
                   Administração (ADM)
                 </p>
                 <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
               </div>
               <nav className="space-y-1">
-                {menuAdmin.map(item => {
+                {menuAdminExclusivo.map(item => {
                   const Icon = item.icon;
                   const isActive = activeTab === item.id;
                   return (
@@ -187,9 +222,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       key={item.id}
                       id={`nav-btn-${item.id}`}
                       onClick={() => handleSelectTab(item.id)}
-                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all ${
+                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
                         isActive
-                          ? 'bg-amber-600 text-white shadow-sm'
+                          ? 'bg-amber-600 text-white shadow-sm font-bold'
                           : 'text-slate-300 hover:bg-slate-800 hover:text-white'
                       }`}
                     >
@@ -203,30 +238,34 @@ export const Sidebar: React.FC<SidebarProps> = ({
           )}
         </div>
 
-        {/* User Footer Card */}
+        {/* Rodapé com Cartão do Usuário Logado */}
         <div className="p-3 border-t border-slate-800 bg-slate-950/60">
-          <div className="bg-slate-900/90 rounded-lg p-2.5 border border-slate-800">
+          <div className="bg-slate-900/90 rounded-xl p-3 border border-slate-800 shadow-inner">
             <div className="flex items-center justify-between mb-1.5">
-              <span className="text-xs font-semibold text-white truncate max-w-[130px]">
+              <span className="text-xs font-bold text-white truncate max-w-[130px]">
                 {currentUser?.nome || 'Usuário'}
               </span>
               <span 
-                className={`text-[9px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider ${
-                  isAdmin ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40' : 'bg-blue-500/20 text-blue-400 border border-blue-500/40'
+                className={`text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${
+                  isAdmin 
+                    ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' 
+                    : isGestor 
+                    ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/40' 
+                    : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
                 }`}
               >
-                {currentUser?.tipo_acesso || 'PADRÃO'}
+                {isAdmin ? '👑 ADM' : isGestor ? '📋 GESTOR' : '🩺 PLANTONISTA'}
               </span>
             </div>
 
-            <p className="text-[11px] text-slate-400 font-mono mb-2">@{currentUser?.login}</p>
+            <p className="text-[11px] text-slate-400 font-mono mb-2.5">@{currentUser?.login}</p>
 
-            <div className="flex items-center gap-1.5 pt-1 border-t border-slate-800">
+            <div className="flex items-center gap-1.5 pt-1.5 border-t border-slate-800">
               <button
                 id="btn-alterar-senha-sidebar"
                 onClick={onOpenChangePassword}
                 title="Alterar Minha Senha"
-                className="flex-1 flex items-center justify-center gap-1 text-[11px] py-1.5 px-2 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
+                className="flex-1 flex items-center justify-center gap-1 text-[11px] py-1.5 px-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors cursor-pointer"
               >
                 <KeyRound className="w-3 h-3 text-slate-400" />
                 <span>Senha</span>
@@ -235,8 +274,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <button
                 id="btn-switch-user-role"
                 onClick={onSwitchUser}
-                title="Alternar Perfil para Testes (ADM <-> Padrão)"
-                className="flex items-center justify-center p-1.5 rounded bg-slate-800 hover:bg-slate-700 text-amber-400 hover:text-amber-300 transition-colors"
+                title="Alternar Perfil para Testes (ADM ↔ GESTOR ↔ PLANTONISTA)"
+                className="flex items-center justify-center p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-400 hover:text-amber-300 transition-colors cursor-pointer"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
               </button>
@@ -244,8 +283,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <button
                 id="btn-logout-sidebar"
                 onClick={onLogout}
-                title="Encerrar Sessão"
-                className="flex items-center justify-center p-1.5 rounded bg-rose-950/50 hover:bg-rose-900/80 text-rose-400 hover:text-rose-200 transition-colors"
+                title="Encerrar Sessão (Voltar à tela de login)"
+                className="flex items-center justify-center p-2 rounded-lg bg-rose-950/50 hover:bg-rose-900/80 text-rose-400 hover:text-rose-200 transition-colors cursor-pointer"
               >
                 <LogOut className="w-3.5 h-3.5" />
               </button>
