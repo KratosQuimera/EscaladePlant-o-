@@ -156,3 +156,98 @@ export interface ResumoDia {
   }[];
   setores: IndicadoresSetor[];
 }
+
+// --- WORKFLOW DE TROCA E PERMUTA DE PLANTÕES ---
+export type TipoTroca = 'PERMUTA' | 'DOACAO' | 'VAGO';
+export type StatusTroca = 
+  | 'PENDENTE_COLEGA' 
+  | 'PENDENTE_COORDENACAO' 
+  | 'APROVADA' 
+  | 'RECUSADA' 
+  | 'CANCELADA';
+
+export interface TrocaPlantao {
+  id: string;
+  tipo: TipoTroca;
+  status: StatusTroca;
+  // Plantão Origem
+  escalaOrigemId: string;
+  dataOrigem: string;
+  turnoOrigem: Turno;
+  setorOrigemId: string;
+  setorOrigemNome: string;
+  solicitanteId: string; // profissional_id
+  solicitanteNome: string;
+  solicitanteCargo: string;
+  // Destinatário / Contrapartida (para permuta ou doação direcionada)
+  destinatarioId?: string; // profissional_id
+  destinatarioNome?: string;
+  escalaDestinoId?: string;
+  dataDestino?: string;
+  turnoDestino?: Turno;
+  // Voluntário para cobertura emergencial (quando tipo for VAGO)
+  voluntarioId?: string;
+  voluntarioNome?: string;
+  voluntarioCargo?: string;
+  // Motivo e histórico
+  motivo?: string;
+  criadoEm: string;
+  respondidoEm?: string;
+  aprovadoPor?: string;
+  aprovadoEm?: string;
+  motivoRecusa?: string;
+}
+
+// --- COLETA PRÉVIA DE INDISPONIBILIDADE (PRÉ-ESCALA) ---
+export type PeriodoIndisponibilidade = 'DIA_TODO' | 'MANHÃ' | 'TARDE' | 'NOITE' | 'DIURNO' | 'NOTURNO';
+
+export interface RestricaoIndisponibilidade {
+  id: string;
+  profissional_id: string;
+  profissional_nome: string;
+  data: string; // YYYY-MM-DD
+  periodo: PeriodoIndisponibilidade;
+  motivo: string;
+  status: 'REGISTRADO' | 'APROVADO' | 'RECUSADO';
+  criado_em: string;
+  registrado_por: string;
+}
+
+// --- PORTAL DO COLABORADOR: CONFIRMAÇÃO DE CIÊNCIA ---
+export interface CienciaEscala {
+  id: string;
+  profissional_id: string;
+  profissional_nome: string;
+  mes_ano: string; // YYYY-MM
+  data_hora: string;
+  registrado_por: string;
+  ip?: string;
+}
+
+// --- COMPLIANCE TRABALHISTA E PREVENÇÃO DE FADIGA ---
+export type NivelCompliance = 'CRITICO' | 'ALERTA' | 'INFO';
+export type TipoViolacaoCompliance = 
+  | 'INTERJORNADA' 
+  | 'SOBREPOSICAO' 
+  | 'TETO_HORAS' 
+  | 'AFASTAMENTO' 
+  | 'INDISPONIBILIDADE';
+
+export interface ComplianceAlert {
+  id: string;
+  nivel: NivelCompliance;
+  tipo: TipoViolacaoCompliance;
+  profissionalId: string;
+  profissionalNome: string;
+  data: string;
+  mensagem: string;
+  detalhes: string;
+  // Propriedades complementares / conveniência de interface
+  severidade?: NivelCompliance;
+  profissional_id?: string;
+  profissional_nome?: string;
+  data_escala?: string;
+  escala_id?: string;
+  sugestao?: string;
+}
+

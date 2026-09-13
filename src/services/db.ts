@@ -7,8 +7,20 @@ import {
   PlantaoRegistro,
   PeriodoAfastamento,
   RegistroAuditoria,
-  UserRole
+  UserRole,
+  TrocaPlantao,
+  RestricaoIndisponibilidade,
+  CienciaEscala
 } from '../types';
+import { firestore } from './firebase';
+import {
+  collection,
+  doc,
+  setDoc,
+  deleteDoc,
+  onSnapshot,
+  writeBatch
+} from 'firebase/firestore';
 
 // Chaves de armazenamento local
 const STORAGE_KEYS = {
@@ -20,7 +32,25 @@ const STORAGE_KEYS = {
   PLANTOES: 'plantoes_registros_v1',
   AFASTAMENTOS: 'plantoes_afastamentos_v1',
   AUDITORIA: 'plantoes_auditoria_v1',
+  TROCAS: 'plantoes_trocas_v1',
+  INDISPONIBILIDADES: 'plantoes_indisponibilidades_v1',
+  CIENCIAS: 'plantoes_ciencias_v1',
   CURRENT_USER: 'plantoes_session_user_v1',
+};
+
+// Mapeamento de coleções do Firebase Firestore
+const KEY_TO_COLLECTION: Record<string, string> = {
+  [STORAGE_KEYS.USERS]: 'users',
+  [STORAGE_KEYS.SETORES]: 'setores',
+  [STORAGE_KEYS.CARGOS]: 'cargos',
+  [STORAGE_KEYS.PROFISSIONAIS]: 'profissionais',
+  [STORAGE_KEYS.ESCALAS]: 'escalas',
+  [STORAGE_KEYS.PLANTOES]: 'plantoes',
+  [STORAGE_KEYS.AFASTAMENTOS]: 'afastamentos',
+  [STORAGE_KEYS.AUDITORIA]: 'auditoria',
+  [STORAGE_KEYS.TROCAS]: 'trocas',
+  [STORAGE_KEYS.INDISPONIBILIDADES]: 'indisponibilidades',
+  [STORAGE_KEYS.CIENCIAS]: 'ciencias',
 };
 
 // Algoritmo de hash de senha (PBKDF2/SHA-256 representation)
@@ -61,6 +91,32 @@ const INITIAL_CARGOS: Omit<Cargo, 'id' | 'criado_em'>[] = [
 ];
 
 class DatabaseService {
+  private subscribers = new Set<() => void>();
+  private cloudConnected: boolean = false;
+  private isSyncingFromCloud: boolean = false;
+  private firestoreListenersActive: boolean = false;
+
+  public subscribe(callback: () => void): () => void {
+    this.subscribers.add(callback);
+    return () => {
+      this.subscribers.delete(callback);
+    };
+  }
+
+  public notifySubscribers(): void {
+    this.subscribers.forEach(cb => {
+      try {
+        cb();
+      } catch (err) {
+        console.error('Subscriber error:', err);
+      }
+    });
+  }
+
+  public isCloudSyncActive(): boolean {
+    return this.cloudConnected;
+  }
+
   private get<T>(key: string, defaultValue: T): T {
     try {
       const data = localStorage.getItem(key);
@@ -70,16 +126,73 @@ class DatabaseService {
     }
   }
 
+  private setLocalOnly<T>(key: string, value: T): void {
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+    } catch (e) {
+      console.error(`Erro ao persistir localmente ${key}:`, e);
+    }
+  }
+
   private set<T>(key: string, value: T): void {
     try {
       localStorage.setItem(key, JSON.stringify(value));
     } catch (e) {
       console.error(`Erro ao persistir ${key}:`, e);
     }
+
+    // Notifica os componentes imediatamente
+    this.notifySubscribers();
+
+    // Sincroniza em segundo plano com o Firebase Firestore
+    const collectionName = KEY_TO_COLLECTION[key];
+    if (collectionName && Array.isArray(value) && !this.isSyncingFromCloud) {
+      this.syncArrayToFirestore(collectionName, value);
+    }
+  }
+
+  public async syncArrayToFirestore(collectionName: string, items: any[]): Promise<void> {
+    if (!Array.isArray(items)) return;
+    try {
+      const CHUNK_SIZE = 400;
+      for (let i = 0; i < items.length; i += CHUNK_SIZE) {
+        const chunk = items.slice(i, i + CHUNK_SIZE);
+        const batch = writeBatch(firestore);
+        chunk.forEach(item => {
+          if (item && item.id) {
+            const ref = doc(firestore, collectionName, String(item.id));
+            batch.set(ref, item, { merge: true });
+          }
+        });
+        await batch.commit();
+      }
+      this.cloudConnected = true;
+    } catch (error) {
+      console.warn(`[Firestore] Sincronização de ${collectionName}:`, error);
+    }
+  }
+
+  public async syncItemToFirestore(collectionName: string, item: any): Promise<void> {
+    if (!item || !item.id) return;
+    try {
+      await setDoc(doc(firestore, collectionName, String(item.id)), item, { merge: true });
+      this.cloudConnected = true;
+    } catch (error) {
+      console.warn(`[Firestore] Erro ao sincronizar item em ${collectionName}:`, error);
+    }
+  }
+
+  public async deleteItemFromFirestore(collectionName: string, id: string): Promise<void> {
+    try {
+      await deleteDoc(doc(firestore, collectionName, String(id)));
+      this.cloudConnected = true;
+    } catch (error) {
+      console.warn(`[Firestore] Erro ao excluir item de ${collectionName}:`, error);
+    }
   }
 
   public init() {
-    // 1. Inicializar Usuários
+    // 1. Inicializar Usuários Locais
     let users = this.get<User[]>(STORAGE_KEYS.USERS, []);
     if (users.length === 0) {
       users = [
@@ -139,6 +252,59 @@ class DatabaseService {
     if (profissionais.length === 0) {
       this.carregarDadosDemonstracao('admin');
     }
+
+    // 5. Iniciar sincronização em tempo real do Firebase Firestore
+    this.initFirestoreSync();
+  }
+
+  private initFirestoreSync(): void {
+    if (this.firestoreListenersActive) return;
+    this.firestoreListenersActive = true;
+
+    // Conectar ouvintes em tempo real para cada uma das coleções do Firestore
+    const collectionsToListen = [
+      { key: STORAGE_KEYS.SETORES, col: 'setores' },
+      { key: STORAGE_KEYS.CARGOS, col: 'cargos' },
+      { key: STORAGE_KEYS.PROFISSIONAIS, col: 'profissionais' },
+      { key: STORAGE_KEYS.ESCALAS, col: 'escalas' },
+      { key: STORAGE_KEYS.PLANTOES, col: 'plantoes' },
+      { key: STORAGE_KEYS.AFASTAMENTOS, col: 'afastamentos' },
+      { key: STORAGE_KEYS.USERS, col: 'users' },
+      { key: STORAGE_KEYS.AUDITORIA, col: 'auditoria' },
+      { key: STORAGE_KEYS.TROCAS, col: 'trocas' },
+      { key: STORAGE_KEYS.INDISPONIBILIDADES, col: 'indisponibilidades' },
+      { key: STORAGE_KEYS.CIENCIAS, col: 'ciencias' },
+    ];
+
+    collectionsToListen.forEach(({ key, col }) => {
+      try {
+        const colRef = collection(firestore, col);
+        onSnapshot(
+          colRef,
+          (snapshot) => {
+            this.cloudConnected = true;
+            if (!snapshot.empty) {
+              const remoteDocs = snapshot.docs.map(d => d.data());
+              this.isSyncingFromCloud = true;
+              this.setLocalOnly(key, remoteDocs);
+              this.isSyncingFromCloud = false;
+              this.notifySubscribers();
+            } else {
+              // Se a coleção na nuvem ainda estiver vazia, sobe os dados locais para a nuvem
+              const localData = this.get<any[]>(key, []);
+              if (localData.length > 0) {
+                this.syncArrayToFirestore(col, localData);
+              }
+            }
+          },
+          (error) => {
+            console.warn(`[Firestore] Ouvinte ${col} desconectado ou regras pendentes:`, error);
+          }
+        );
+      } catch (err) {
+        console.warn(`[Firestore] Erro ao registrar ouvinte ${col}:`, err);
+      }
+    });
   }
 
   // --- AUTENTICAÇÃO E SESSÃO ---
@@ -464,6 +630,7 @@ class DatabaseService {
     let setores = this.getSetores();
     setores = setores.filter(s => s.id !== setorId);
     this.set(STORAGE_KEYS.SETORES, setores);
+    this.deleteItemFromFirestore('setores', setorId);
     this.addAuditoria(
       currentUser.id,
       currentUser.nome,
@@ -1385,6 +1552,9 @@ class DatabaseService {
       this.set(STORAGE_KEYS.PLANTOES, data.plantoes || []);
       this.set(STORAGE_KEYS.AFASTAMENTOS, data.afastamentos || []);
       this.set(STORAGE_KEYS.AUDITORIA, data.auditoria || []);
+      if (data.trocas) this.set(STORAGE_KEYS.TROCAS, data.trocas);
+      if (data.indisponibilidades) this.set(STORAGE_KEYS.INDISPONIBILIDADES, data.indisponibilidades);
+      if (data.ciencias) this.set(STORAGE_KEYS.CIENCIAS, data.ciencias);
 
       this.addAuditoria(
         currentUser.id,
@@ -1400,6 +1570,375 @@ class DatabaseService {
     } catch {
       return { success: false, message: 'Falha ao processar arquivo JSON de backup.' };
     }
+  }
+
+  // ==========================================
+  // WORKFLOW DE TROCA E PERMUTA DE PLANTÕES
+  // ==========================================
+
+  public getTrocas(): TrocaPlantao[] {
+    const list = this.get<TrocaPlantao[]>(STORAGE_KEYS.TROCAS, []);
+    return [...list].sort((a, b) => b.criadoEm.localeCompare(a.criadoEm));
+  }
+
+  public solicitarTroca(dados: Omit<TrocaPlantao, 'id' | 'status' | 'criadoEm'>): { success: boolean; message: string; troca?: TrocaPlantao } {
+    const trocas = this.getTrocas();
+    const id = `troca_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
+    const criadoEm = new Date().toISOString();
+
+    const statusInicial = dados.tipo === 'VAGO' 
+      ? 'PENDENTE_COORDENACAO' 
+      : (dados.destinatarioId ? 'PENDENTE_COLEGA' : 'PENDENTE_COORDENACAO');
+
+    const novaTroca: TrocaPlantao = {
+      ...dados,
+      id,
+      status: statusInicial,
+      criadoEm
+    };
+
+    trocas.unshift(novaTroca);
+    this.set(STORAGE_KEYS.TROCAS, trocas);
+    this.syncItemToFirestore('trocas', novaTroca);
+
+    const currentUser = this.getCurrentUser();
+    this.addAuditoria(
+      currentUser?.id || 'sys',
+      currentUser?.nome || dados.solicitanteNome,
+      currentUser?.login || 'solicitante',
+      'SOLICITACAO_TROCA',
+      'trocas',
+      id,
+      `Solicitação de ${dados.tipo} do plantão em ${dados.dataOrigem} (${dados.turnoOrigem}) - Posto: ${dados.setorOrigemNome}`
+    );
+
+    return { 
+      success: true, 
+      message: dados.tipo === 'VAGO' 
+        ? 'Plantão aberto para cobertura no banco de vagas!' 
+        : (dados.destinatarioId ? 'Solicitação enviada ao colega para anuência!' : 'Solicitação enviada para avaliação da coordenação!'),
+      troca: novaTroca 
+    };
+  }
+
+  public responderTrocaColega(trocaId: string, aceitou: boolean, motivoRecusa?: string): { success: boolean; message: string } {
+    const trocas = this.getTrocas();
+    const index = trocas.findIndex(t => t.id === trocaId);
+    if (index === -1) return { success: false, message: 'Solicitação de troca não encontrada.' };
+
+    const troca = { ...trocas[index] };
+    const agora = new Date().toISOString();
+
+    if (aceitou) {
+      troca.status = 'PENDENTE_COORDENACAO';
+      troca.respondidoEm = agora;
+    } else {
+      troca.status = 'RECUSADA';
+      troca.respondidoEm = agora;
+      troca.motivoRecusa = motivoRecusa || 'Recusada pelo colega';
+    }
+
+    trocas[index] = troca;
+    this.set(STORAGE_KEYS.TROCAS, trocas);
+    this.syncItemToFirestore('trocas', troca);
+
+    const currentUser = this.getCurrentUser();
+    this.addAuditoria(
+      currentUser?.id || 'sys',
+      currentUser?.nome || 'Colega',
+      currentUser?.login || 'colega',
+      'RESPOSTA_TROCA_COLEGA',
+      'trocas',
+      trocaId,
+      `Colega ${aceitou ? 'ACEITOU (aguardando coordenação)' : 'RECUSOU'} troca de plantão`
+    );
+
+    return { 
+      success: true, 
+      message: aceitou 
+        ? 'Você aceitou a permuta! A solicitação foi encaminhada para homologação da coordenação.' 
+        : 'Você recusou a solicitação de troca.' 
+    };
+  }
+
+  public voluntariarPlantaoVago(trocaId: string, voluntarioProfissionalId: string): { success: boolean; message: string } {
+    const trocas = this.getTrocas();
+    const index = trocas.findIndex(t => t.id === trocaId);
+    if (index === -1) return { success: false, message: 'Vaga de plantão não encontrada.' };
+
+    const profissional = this.getProfissionais().find(p => p.id === voluntarioProfissionalId);
+    if (!profissional) return { success: false, message: 'Profissional não identificado.' };
+
+    const cargo = this.getCargos().find(c => c.id === profissional.cargo_id);
+
+    const troca = { ...trocas[index] };
+    troca.voluntarioId = profissional.id;
+    troca.voluntarioNome = profissional.nome_completo;
+    troca.voluntarioCargo = cargo?.nome || 'Profissional de Saúde';
+    troca.status = 'PENDENTE_COORDENACAO';
+    troca.respondidoEm = new Date().toISOString();
+
+    trocas[index] = troca;
+    this.set(STORAGE_KEYS.TROCAS, trocas);
+    this.syncItemToFirestore('trocas', troca);
+
+    return {
+      success: true,
+      message: `Voluntariado registrado com sucesso para ${profissional.nome_completo}! Encaminhado para a coordenação.`
+    };
+  }
+
+  public aprovarTrocaCoordenacao(trocaId: string, aprovado: boolean, motivo?: string): { success: boolean; message: string } {
+    const currentUser = this.getCurrentUser();
+    if (currentUser?.tipo_acesso !== 'ADM') {
+      return { success: false, message: 'Apenas a coordenação / administração pode homologar trocas de plantão.' };
+    }
+
+    const trocas = this.getTrocas();
+    const index = trocas.findIndex(t => t.id === trocaId);
+    if (index === -1) return { success: false, message: 'Solicitação de troca não encontrada.' };
+
+    const troca = { ...trocas[index] };
+    const agora = new Date().toISOString();
+
+    if (!aprovado) {
+      troca.status = 'RECUSADA';
+      troca.aprovadoPor = currentUser.nome;
+      troca.aprovadoEm = agora;
+      troca.motivoRecusa = motivo || 'Recusada pela coordenação';
+
+      trocas[index] = troca;
+      this.set(STORAGE_KEYS.TROCAS, trocas);
+      this.syncItemToFirestore('trocas', troca);
+
+      this.addAuditoria(
+        currentUser.id,
+        currentUser.nome,
+        currentUser.login,
+        'RECUSA_TROCA_COORDENACAO',
+        'trocas',
+        trocaId,
+        `Troca recusada pela coordenação. Motivo: ${troca.motivoRecusa}`
+      );
+
+      return { success: true, message: 'Solicitação de troca foi indeferida pela coordenação.' };
+    }
+
+    // Se aprovado, efetuar a permuta/transferência nas escalas reais!
+    const escalas = this.getEscalas();
+    const idxOrigem = escalas.findIndex(e => e.id === troca.escalaOrigemId);
+
+    if (idxOrigem === -1) {
+      return { success: false, message: 'Plantão de origem não foi encontrado na base de dados.' };
+    }
+
+    if (troca.tipo === 'PERMUTA' && troca.escalaDestinoId && troca.destinatarioId) {
+      const idxDestino = escalas.findIndex(e => e.id === troca.escalaDestinoId);
+      if (idxDestino !== -1) {
+        const escalaOrigem = { ...escalas[idxOrigem] };
+        const escalaDestino = { ...escalas[idxDestino] };
+
+        const tempProf = escalaOrigem.profissional_id;
+        escalaOrigem.profissional_id = escalaDestino.profissional_id;
+        escalaDestino.profissional_id = tempProf;
+
+        escalaOrigem.atualizado_em = agora;
+        escalaDestino.atualizado_em = agora;
+
+        escalas[idxOrigem] = escalaOrigem;
+        escalas[idxDestino] = escalaDestino;
+
+        this.set(STORAGE_KEYS.ESCALAS, escalas);
+        this.syncItemToFirestore('escalas', escalaOrigem);
+        this.syncItemToFirestore('escalas', escalaDestino);
+      }
+    } else if (troca.tipo === 'DOACAO' && troca.destinatarioId) {
+      const escalaOrigem = { ...escalas[idxOrigem] };
+      escalaOrigem.profissional_id = troca.destinatarioId;
+      escalaOrigem.atualizado_em = agora;
+      escalas[idxOrigem] = escalaOrigem;
+
+      this.set(STORAGE_KEYS.ESCALAS, escalas);
+      this.syncItemToFirestore('escalas', escalaOrigem);
+    } else if (troca.tipo === 'VAGO' && troca.voluntarioId) {
+      const escalaOrigem = { ...escalas[idxOrigem] };
+      escalaOrigem.profissional_id = troca.voluntarioId;
+      escalaOrigem.atualizado_em = agora;
+      escalas[idxOrigem] = escalaOrigem;
+
+      this.set(STORAGE_KEYS.ESCALAS, escalas);
+      this.syncItemToFirestore('escalas', escalaOrigem);
+    }
+
+    troca.status = 'APROVADA';
+    troca.aprovadoPor = currentUser.nome;
+    troca.aprovadoEm = agora;
+    trocas[index] = troca;
+
+    this.set(STORAGE_KEYS.TROCAS, trocas);
+    this.syncItemToFirestore('trocas', troca);
+
+    this.addAuditoria(
+      currentUser.id,
+      currentUser.nome,
+      currentUser.login,
+      'APROVACAO_TROCA_PLANTAO',
+      'escalas',
+      troca.escalaOrigemId,
+      `Troca ${troca.tipo} aprovada com sucesso. Escala atualizada automaticamente.`
+    );
+
+    return { 
+      success: true, 
+      message: 'Troca de plantão aprovada e homologada com sucesso! A escala oficial foi atualizada em tempo real.' 
+    };
+  }
+
+  public cancelarTroca(trocaId: string): { success: boolean; message: string } {
+    const trocas = this.getTrocas();
+    const index = trocas.findIndex(t => t.id === trocaId);
+    if (index === -1) return { success: false, message: 'Troca não encontrada.' };
+
+    const troca = { ...trocas[index] };
+    if (troca.status === 'APROVADA') {
+      return { success: false, message: 'Não é possível cancelar uma troca já homologada pela coordenação.' };
+    }
+
+    troca.status = 'CANCELADA';
+    trocas[index] = troca;
+    this.set(STORAGE_KEYS.TROCAS, trocas);
+    this.syncItemToFirestore('trocas', troca);
+
+    return { success: true, message: 'Solicitação de troca cancelada com sucesso.' };
+  }
+
+  // ==========================================
+  // COLETA PRÉVIA DE INDISPONIBILIDADE (PRÉ-ESCALA)
+  // ==========================================
+
+  public getIndisponibilidades(mesAno?: string, profissionalId?: string): RestricaoIndisponibilidade[] {
+    let list = this.get<RestricaoIndisponibilidade[]>(STORAGE_KEYS.INDISPONIBILIDADES, []);
+    if (mesAno) {
+      list = list.filter(item => item.data.startsWith(mesAno));
+    }
+    if (profissionalId) {
+      list = list.filter(item => item.profissional_id === profissionalId);
+    }
+    return [...list].sort((a, b) => a.data.localeCompare(b.data));
+  }
+
+  public salvarIndisponibilidade(dados: Omit<RestricaoIndisponibilidade, 'id' | 'criado_em' | 'status'>): { success: boolean; message: string } {
+    const list = this.getIndisponibilidades();
+    
+    // Evitar duplicações
+    const jaExiste = list.find(r => r.profissional_id === dados.profissional_id && r.data === dados.data && r.periodo === dados.periodo);
+    if (jaExiste) {
+      return { success: false, message: 'Já existe uma restrição de indisponibilidade registrada para esta data e período.' };
+    }
+
+    const id = `indisp_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
+    const nova: RestricaoIndisponibilidade = {
+      ...dados,
+      id,
+      status: 'REGISTRADO',
+      criado_em: new Date().toISOString()
+    };
+
+    list.push(nova);
+    this.set(STORAGE_KEYS.INDISPONIBILIDADES, list);
+    this.syncItemToFirestore('indisponibilidades', nova);
+
+    const currentUser = this.getCurrentUser();
+    this.addAuditoria(
+      currentUser?.id || 'sys',
+      currentUser?.nome || dados.profissional_nome,
+      currentUser?.login || 'colaborador',
+      'CADASTRO_INDISPONIBILIDADE',
+      'indisponibilidades',
+      id,
+      `Indisponibilidade registrada para ${dados.data} (${dados.periodo}): ${dados.motivo}`
+    );
+
+    return { success: true, message: 'Indisponibilidade registrada com sucesso para consideração na pré-escala!' };
+  }
+
+  public removerIndisponibilidade(id: string): { success: boolean; message: string } {
+    const list = this.getIndisponibilidades();
+    const index = list.findIndex(r => r.id === id);
+    if (index === -1) return { success: false, message: 'Registro não encontrado.' };
+
+    list.splice(index, 1);
+    this.set(STORAGE_KEYS.INDISPONIBILIDADES, list);
+    this.deleteItemFromFirestore('indisponibilidades', id);
+
+    return { success: true, message: 'Restrição de indisponibilidade removida.' };
+  }
+
+  public excluirIndisponibilidade(id: string): { success: boolean; message: string } {
+    return this.removerIndisponibilidade(id);
+  }
+
+  // ==========================================
+  // PORTAL DO COLABORADOR: CIÊNCIA DA ESCALA
+  // ==========================================
+
+  public getCiencia(profissionalId: string, mesAno: string): CienciaEscala | undefined {
+    const ciencias = this.get<CienciaEscala[]>(STORAGE_KEYS.CIENCIAS, []);
+    return ciencias.find(c => c.profissional_id === profissionalId && c.mes_ano === mesAno);
+  }
+
+  public todasCiencias(mesAno?: string): CienciaEscala[] {
+    const ciencias = this.get<CienciaEscala[]>(STORAGE_KEYS.CIENCIAS, []);
+    if (mesAno) {
+      return ciencias.filter(c => c.mes_ano === mesAno);
+    }
+    return ciencias;
+  }
+
+  public registrarCiencia(
+    profissionalId: string, 
+    mesAnoOuNome: string, 
+    mesAnoOpcional?: string, 
+    registradoPorOpcional?: string
+  ): { success: boolean; message: string; ciencia?: CienciaEscala } {
+    const profissional = this.getProfissionais().find(p => p.id === profissionalId);
+    if (!profissional) return { success: false, message: 'Profissional não encontrado.' };
+
+    // Suporta chamadas com (id, mesAno) ou (id, nome, mesAno, registradoPor)
+    const mesAno = mesAnoOpcional || mesAnoOuNome;
+    const ciencias = this.todasCiencias();
+    const jaExiste = ciencias.find(c => c.profissional_id === profissionalId && c.mes_ano === mesAno);
+    if (jaExiste) {
+      return { success: true, message: 'Ciência já registrada anteriormente para este mês.', ciencia: jaExiste };
+    }
+
+    const id = `cie_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
+    const currentUser = this.getCurrentUser();
+    const nova: CienciaEscala = {
+      id,
+      profissional_id: profissionalId,
+      profissional_nome: profissional.nome_completo,
+      mes_ano: mesAno,
+      data_hora: new Date().toISOString(),
+      registrado_por: registradoPorOpcional || currentUser?.nome || profissional.nome_completo,
+      ip: '127.0.0.1'
+    };
+
+    ciencias.push(nova);
+    this.set(STORAGE_KEYS.CIENCIAS, ciencias);
+    this.syncItemToFirestore('ciencias', nova);
+
+    this.addAuditoria(
+      currentUser?.id || 'colab',
+      currentUser?.nome || profissional.nome_completo,
+      currentUser?.login || profissional.matricula,
+      'REGISTRO_CIENCIA_ESCALA',
+      'escalas',
+      profissionalId,
+      `Ciência confirmada da escala mensal de ${mesAno} por ${profissional.nome_completo}`
+    );
+
+    return { success: true, message: 'Ciência da escala registrada com sucesso!', ciencia: nova };
   }
 }
 

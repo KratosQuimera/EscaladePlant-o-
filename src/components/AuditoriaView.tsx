@@ -56,11 +56,11 @@ export const AuditoriaView: React.FC = () => {
   };
 
   return (
-    <div id="auditoria-view" className="p-6 space-y-5 max-w-7xl mx-auto">
+    <div id="auditoria-view" className="p-3 sm:p-6 space-y-4 sm:space-y-5 max-w-7xl mx-auto">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
         <div>
-          <h2 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+          <h2 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
             <ShieldAlert className="w-5 h-5 text-amber-600" />
             <span>TRILHA DE AUDITORIA DO SISTEMA</span>
           </h2>
@@ -71,7 +71,7 @@ export const AuditoriaView: React.FC = () => {
 
         <button
           onClick={handleExportAuditCSV}
-          className="flex items-center gap-2 px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold shadow-2xs transition-colors"
+          className="flex items-center justify-center gap-2 px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold shadow-2xs transition-colors w-full sm:w-auto min-h-[38px] sm:min-h-0"
         >
           <Download className="w-4 h-4 text-amber-600" />
           <span>Exportar Trilha (CSV)</span>
@@ -87,7 +87,7 @@ export const AuditoriaView: React.FC = () => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Pesquisar por detalhes, operador, tabela, ID..."
-            className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:bg-white focus:outline-none"
+            className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:bg-white focus:outline-none"
           />
         </div>
 
@@ -95,7 +95,7 @@ export const AuditoriaView: React.FC = () => {
           <select
             value={filterAcao}
             onChange={(e) => setFilterAcao(e.target.value)}
-            className="w-full text-xs p-1.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:outline-none cursor-pointer font-medium"
+            className="w-full text-xs p-2 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:outline-none cursor-pointer font-medium"
           >
             <option value="TODAS">Todas as Operações</option>
             <option value="REGISTRO_PRESENCA">REGISTRO_PRESENCA</option>
@@ -111,8 +111,40 @@ export const AuditoriaView: React.FC = () => {
         </div>
       </div>
 
-      {/* Lista de Auditoria */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-2xs overflow-hidden">
+      {/* VISUALIZAÇÃO MOBILE (md:hidden) */}
+      <div className="md:hidden space-y-3">
+        {filteredLogs.length === 0 ? (
+          <div className="bg-white rounded-xl border border-slate-200 p-8 text-center text-slate-500">
+            Nenhum registro de auditoria encontrado.
+          </div>
+        ) : (
+          filteredLogs.map(log => (
+            <div 
+              key={`mobile-audit-${log.id}`}
+              className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-2xs space-y-2"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase bg-slate-100 text-slate-700 border border-slate-200 shrink-0">
+                  {log.acao}
+                </span>
+                <span className="font-mono text-[11px] text-slate-400">{log.data_hora}</span>
+              </div>
+
+              <div className="text-xs font-semibold text-slate-800">
+                {log.detalhes}
+              </div>
+
+              <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1.5 border-t border-slate-100">
+                <span>Por: <strong className="text-slate-700">{log.usuario_nome}</strong></span>
+                <span className="font-mono text-slate-400">{log.tabela}</span>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Lista de Auditoria DESKTOP */}
+      <div className="hidden md:block bg-white rounded-xl border border-slate-200 shadow-2xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>

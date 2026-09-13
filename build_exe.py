@@ -108,7 +108,7 @@ def check_and_build_frontend():
         print(f" [ERRO] Falha no fallback: {copy_err}")
     
     print(" [ERRO] Não foi possível encontrar ou compilar os arquivos de dist/.")
-    print(" DICA: Baixe o pacote pré-compilado diretamente pelo menu 'App Executável (.EXE)' no sistema web.")
+    print(" DICA: Execute 'npm run build' antes de rodar o gerador executável.")
     return False
 
 def compile_executable():

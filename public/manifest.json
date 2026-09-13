@@ -1,0 +1,33 @@
+{
+  "id": "/",
+  "name": "Sistema de Gestão de Plantões Hospitalares",
+  "short_name": "Plantões",
+  "description": "Sistema web em nuvem completo para gestão, escala e monitoramento de plantões hospitalares à distância em tempo real com controle de acesso.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0f172a",
+  "theme_color": "#059669",
+  "categories": ["medical", "productivity", "business"],
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

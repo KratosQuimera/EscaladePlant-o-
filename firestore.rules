@@ -1,0 +1,73 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128;
+    }
+
+    // Teste de conectividade
+    match /test/{testId} {
+      allow read: if true;
+    }
+
+    // Setores hospitalares
+    match /setores/{setorId} {
+      allow read, write: if isValidId(setorId);
+    }
+
+    // Cargos e especialidades
+    match /cargos/{cargoId} {
+      allow read, write: if isValidId(cargoId);
+    }
+
+    // Profissionais de saúde
+    match /profissionais/{profissionalId} {
+      allow read, write: if isValidId(profissionalId);
+    }
+
+    // Escalas de plantão
+    match /escalas/{escalaId} {
+      allow read, write: if isValidId(escalaId);
+    }
+
+    // Registros de plantões
+    match /plantoes/{plantaoId} {
+      allow read, write: if isValidId(plantaoId);
+    }
+
+    // Afastamentos (férias e atestados)
+    match /afastamentos/{afastamentoId} {
+      allow read, write: if isValidId(afastamentoId);
+    }
+
+    // Usuários do sistema
+    match /users/{userId} {
+      allow read, write: if isValidId(userId);
+    }
+
+    // Registros de auditoria
+    match /auditoria/{auditoriaId} {
+      allow read, write: if isValidId(auditoriaId);
+    }
+
+    // Trocas e permutas de plantão
+    match /trocas/{trocaId} {
+      allow read, write: if isValidId(trocaId);
+    }
+
+    // Restrições de indisponibilidade prévia
+    match /indisponibilidades/{indisponibilidadeId} {
+      allow read, write: if isValidId(indisponibilidadeId);
+    }
+
+    // Ciência de escala mensal
+    match /ciencias/{cienciaId} {
+      allow read, write: if isValidId(cienciaId);
+    }
+  }
+}

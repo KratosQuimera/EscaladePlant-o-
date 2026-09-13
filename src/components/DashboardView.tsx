@@ -65,13 +65,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const statusGeralStyle = getStatusColor(resumo.statusGeral);
 
   return (
-    <div id="dashboard-view" className="p-6 space-y-6 max-w-7xl mx-auto">
+    <div id="dashboard-view" className="p-3 sm:p-6 space-y-4 sm:space-y-6 max-w-7xl mx-auto">
       {/* Title & Date Banner */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-slate-200">
         <div>
-          <h2 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+          <h2 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2 flex-wrap">
             <span>MONITORAMENTO DE PLANTÕES</span>
-            <span className={`text-xs px-2 py-0.5 rounded-full font-bold uppercase border ${statusGeralStyle.badge}`}>
+            <span className={`text-[11px] sm:text-xs px-2 py-0.5 rounded-full font-bold uppercase border ${statusGeralStyle.badge}`}>
               {resumo.statusGeral}
             </span>
           </h2>
@@ -85,17 +85,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <button
             id="btn-info-regra-presenca"
             onClick={() => setShowFormulaTooltip(!showFormulaTooltip)}
-            className="flex items-center gap-1.5 text-xs text-slate-600 bg-white border border-slate-200 px-3 py-1.5 rounded-lg hover:bg-slate-50 transition-colors shadow-2xs"
+            className="flex items-center gap-1.5 text-xs text-slate-600 bg-white border border-slate-200 px-3 py-1.5 rounded-lg hover:bg-slate-50 transition-colors shadow-2xs min-h-[38px]"
           >
             <HelpCircle className="w-3.5 h-3.5 text-blue-600" />
             <span>Regra de Cálculo de Presença</span>
           </button>
 
           {showFormulaTooltip && (
-            <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-xl border border-slate-200 p-4 text-xs z-30 animate-in fade-in">
+            <div className="absolute right-0 top-full mt-2 w-72 sm:w-80 bg-white rounded-xl shadow-xl border border-slate-200 p-4 text-xs z-30 animate-in fade-in">
               <div className="flex items-center justify-between pb-2 border-b border-slate-100 font-semibold text-slate-800">
                 <span>Fórmula Oficial de Presença</span>
-                <button onClick={() => setShowFormulaTooltip(false)} className="text-slate-400 hover:text-slate-600">×</button>
+                <button onClick={() => setShowFormulaTooltip(false)} className="text-slate-400 hover:text-slate-600 p-1 text-sm">×</button>
               </div>
               <div className="py-2 space-y-2 text-slate-600">
                 <p className="font-mono bg-slate-50 p-2 rounded border border-slate-200 text-slate-800 text-[11px]">
@@ -116,7 +116,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       </div>
 
       {/* 7 Principal Cards (Requirement 23) */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2 sm:gap-3">
         {/* 1. Escalados */}
         <div id="card-escalados" className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-2xs">
           <div className="flex items-center justify-between text-slate-500 mb-1">

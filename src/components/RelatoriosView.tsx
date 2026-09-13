@@ -110,11 +110,11 @@ export const RelatoriosView: React.FC<RelatoriosViewProps> = ({
   };
 
   return (
-    <div id="relatorios-view" className="p-6 space-y-6 max-w-7xl mx-auto">
+    <div id="relatorios-view" className="p-3 sm:p-6 space-y-4 sm:space-y-6 max-w-7xl mx-auto">
       {/* Header com botões de Exportação e Impressão */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
         <div>
-          <h2 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+          <h2 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
             <FileText className="w-5 h-5 text-emerald-600" />
             <span>CENTRAL DE RELATÓRIOS GERENCIAIS</span>
           </h2>
@@ -123,26 +123,26 @@ export const RelatoriosView: React.FC<RelatoriosViewProps> = ({
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
           <button
             onClick={handlePrint}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold shadow-2xs transition-colors"
+            className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2 sm:py-1.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold shadow-2xs transition-colors min-h-[38px] sm:min-h-0"
           >
             <Printer className="w-4 h-4 text-slate-500" />
             <span>Imprimir / Salvar PDF</span>
           </button>
           <button
             onClick={handleExportCSV}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors"
+            className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3.5 py-2 sm:py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors min-h-[38px] sm:min-h-0"
           >
             <Download className="w-4 h-4" />
-            <span>Exportar Dados (CSV)</span>
+            <span>Exportar (CSV)</span>
           </button>
         </div>
       </div>
 
       {/* Seleção do Tipo de Relatório */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
         <button
           onClick={() => setTipoRelatorio('DIARIO')}
           className={`p-3 rounded-xl border text-left transition-all ${
@@ -194,31 +194,33 @@ export const RelatoriosView: React.FC<RelatoriosViewProps> = ({
 
       {/* Filtros Contextuais */}
       {tipoRelatorio !== 'DIARIO' && (
-        <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-2xs flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-2 text-xs">
+        <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-2xs flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-xs">
             <span className="font-semibold text-slate-600">Período:</span>
-            <input
-              type="date"
-              value={dataInicio}
-              onChange={(e) => setDataInicio(e.target.value)}
-              className="p-1.5 bg-slate-50 border border-slate-200 rounded text-xs"
-            />
-            <span>até</span>
-            <input
-              type="date"
-              value={dataFim}
-              onChange={(e) => setDataFim(e.target.value)}
-              className="p-1.5 bg-slate-50 border border-slate-200 rounded text-xs"
-            />
+            <div className="flex items-center gap-2">
+              <input
+                type="date"
+                value={dataInicio}
+                onChange={(e) => setDataInicio(e.target.value)}
+                className="flex-1 sm:flex-initial p-2 sm:p-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs min-h-[38px] sm:min-h-0"
+              />
+              <span className="text-slate-400">até</span>
+              <input
+                type="date"
+                value={dataFim}
+                onChange={(e) => setDataFim(e.target.value)}
+                className="flex-1 sm:flex-initial p-2 sm:p-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs min-h-[38px] sm:min-h-0"
+              />
+            </div>
           </div>
 
           {tipoRelatorio === 'SETOR' && (
-            <div className="flex items-center gap-2 text-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-2 text-xs">
               <span className="font-semibold text-slate-600">Setor:</span>
               <select
                 value={selectedSetorId}
                 onChange={(e) => setSelectedSetorId(e.target.value)}
-                className="p-1.5 bg-slate-50 border border-slate-200 rounded text-xs cursor-pointer font-medium"
+                className="w-full sm:w-auto p-2 sm:p-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs cursor-pointer font-medium min-h-[38px] sm:min-h-0"
               >
                 <option value="TODOS">Todos os Setores</option>
                 {setores.map(s => (
@@ -231,18 +233,18 @@ export const RelatoriosView: React.FC<RelatoriosViewProps> = ({
       )}
 
       {/* Conteúdo Formatado para Visualização e Impressão */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-2xs p-6 print:p-0 print:border-none">
+      <div className="bg-white rounded-xl border border-slate-200 shadow-2xs p-3.5 sm:p-6 print:p-0 print:border-none">
         {/* Cabeçalho do Documento Impresso */}
-        <div className="border-b-2 border-slate-800 pb-4 mb-6 flex items-center justify-between">
+        <div className="border-b-2 border-slate-800 pb-4 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
-            <h1 className="text-base font-bold text-slate-900 uppercase tracking-tight">
+            <h1 className="text-sm sm:text-base font-bold text-slate-900 uppercase tracking-tight">
               Hospital Municipal & Pronto Atendimento
             </h1>
             <p className="text-xs text-slate-600 font-medium">
               SISTEMA DE GESTÃO, ESCALA E MONITORAMENTO DE PLANTÕES
             </p>
           </div>
-          <div className="text-right text-xs text-slate-500">
+          <div className="sm:text-right text-xs text-slate-500">
             <p>Data do Relatório: <strong>{selectedDate.split('-').reverse().join('/')}</strong></p>
             <p>Emitido por: {currentUser?.nome || 'Administrador'}</p>
           </div>
@@ -251,30 +253,30 @@ export const RelatoriosView: React.FC<RelatoriosViewProps> = ({
         {/* RELATÓRIO 1: DIÁRIO GERAL */}
         {tipoRelatorio === 'DIARIO' && (
           <div className="space-y-6">
-            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 text-center p-3 bg-slate-50 rounded-lg border border-slate-200">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-center p-3 bg-slate-50 rounded-lg border border-slate-200">
               <div>
                 <span className="text-[10px] text-slate-500 uppercase">Escalados</span>
-                <p className="text-lg font-bold text-slate-800">{resumoDia.escaladosTotal}</p>
+                <p className="text-base sm:text-lg font-bold text-slate-800">{resumoDia.escaladosTotal}</p>
               </div>
               <div>
                 <span className="text-[10px] text-emerald-600 uppercase">Presentes</span>
-                <p className="text-lg font-bold text-emerald-700">{resumoDia.presentesTotal}</p>
+                <p className="text-base sm:text-lg font-bold text-emerald-700">{resumoDia.presentesTotal}</p>
               </div>
               <div>
                 <span className="text-[10px] text-rose-600 uppercase">Ausentes</span>
-                <p className="text-lg font-bold text-rose-700">{resumoDia.ausentesTotal}</p>
+                <p className="text-base sm:text-lg font-bold text-rose-700">{resumoDia.ausentesTotal}</p>
               </div>
               <div>
                 <span className="text-[10px] text-blue-600 uppercase">Férias</span>
-                <p className="text-lg font-bold text-blue-700">{resumoDia.feriasTotal}</p>
+                <p className="text-base sm:text-lg font-bold text-blue-700">{resumoDia.feriasTotal}</p>
               </div>
               <div>
                 <span className="text-[10px] text-amber-600 uppercase">Atestados</span>
-                <p className="text-lg font-bold text-amber-700">{resumoDia.atestadosTotal}</p>
+                <p className="text-base sm:text-lg font-bold text-amber-700">{resumoDia.atestadosTotal}</p>
               </div>
               <div>
                 <span className="text-[10px] text-slate-600 uppercase">Presença %</span>
-                <p className="text-lg font-bold text-emerald-700">{resumoDia.percentualGeral}%</p>
+                <p className="text-base sm:text-lg font-bold text-emerald-700">{resumoDia.percentualGeral}%</p>
               </div>
             </div>
 
@@ -282,43 +284,102 @@ export const RelatoriosView: React.FC<RelatoriosViewProps> = ({
               <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
                 Demonstrativo Analítico por Setor Hospitalar
               </h3>
-              <table className="w-full text-left text-xs border-collapse border border-slate-200">
-                <thead>
-                  <tr className="bg-slate-100 text-slate-700 font-semibold border-b border-slate-200">
-                    <th className="p-2 border-r border-slate-200">Setor</th>
-                    <th className="p-2 text-center border-r border-slate-200">Escalados</th>
-                    <th className="p-2 text-center border-r border-slate-200">Presentes</th>
-                    <th className="p-2 text-center border-r border-slate-200">Ausentes</th>
-                    <th className="p-2 text-center border-r border-slate-200">Férias</th>
-                    <th className="p-2 text-center border-r border-slate-200">Atestados</th>
-                    <th className="p-2 text-center border-r border-slate-200">Pendentes</th>
-                    <th className="p-2 text-center border-r border-slate-200">Presença %</th>
-                    <th className="p-2 text-center">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-200">
-                  {resumoDia.setores.map(s => (
-                    <tr key={s.setor_id} className="hover:bg-slate-50">
-                      <td className="p-2 font-bold text-slate-800 border-r border-slate-200">Setor {s.setor_nome}</td>
-                      <td className="p-2 text-center border-r border-slate-200">{s.escalados}</td>
-                      <td className="p-2 text-center text-emerald-700 font-bold border-r border-slate-200">{s.presentes}</td>
-                      <td className="p-2 text-center text-rose-700 font-bold border-r border-slate-200">{s.ausentes}</td>
-                      <td className="p-2 text-center text-blue-700 border-r border-slate-200">{s.ferias}</td>
-                      <td className="p-2 text-center text-amber-700 border-r border-slate-200">{s.atestados}</td>
-                      <td className="p-2 text-center text-slate-500 border-r border-slate-200">{s.pendentes}</td>
-                      <td className="p-2 text-center font-bold border-r border-slate-200">{s.percentualPresenca}%</td>
-                      <td className="p-2 text-center">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                          s.status === 'NORMAL' ? 'bg-emerald-100 text-emerald-800' :
-                          s.status === 'ATENÇÃO' ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800'
-                        }`}>
-                          {s.status}
-                        </span>
-                      </td>
+
+              {/* CARDS PARA MOBILE (md:hidden print:hidden) */}
+              <div className="md:hidden print:hidden space-y-3">
+                {resumoDia.setores.map(s => (
+                  <div 
+                    key={`mob-resumo-${s.setor_id}`}
+                    className="bg-slate-50 rounded-xl border border-slate-200 p-3.5 space-y-2.5"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-bold text-slate-900 text-sm">Setor {s.setor_nome}</span>
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                        s.status === 'NORMAL' ? 'bg-emerald-100 text-emerald-800' :
+                        s.status === 'ATENÇÃO' ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800'
+                      }`}>
+                        {s.status}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-200/60">
+                      <span className="text-slate-500">Taxa de Presença:</span>
+                      <span className="font-bold text-emerald-700 text-sm">{s.percentualPresenca}%</span>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-1.5 text-center text-[11px] pt-1">
+                      <div className="bg-white p-1.5 rounded border border-slate-200">
+                        <span className="text-slate-400 block text-[10px]">Escalados</span>
+                        <strong className="text-slate-800">{s.escalados}</strong>
+                      </div>
+                      <div className="bg-emerald-50/70 p-1.5 rounded border border-emerald-200">
+                        <span className="text-emerald-700 block text-[10px]">Presentes</span>
+                        <strong className="text-emerald-800">{s.presentes}</strong>
+                      </div>
+                      <div className="bg-rose-50/70 p-1.5 rounded border border-rose-200">
+                        <span className="text-rose-700 block text-[10px]">Ausentes</span>
+                        <strong className="text-rose-800">{s.ausentes}</strong>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-1.5 text-center text-[11px]">
+                      <div className="bg-blue-50/70 p-1.5 rounded border border-blue-200">
+                        <span className="text-blue-700 block text-[10px]">Férias</span>
+                        <strong className="text-blue-800">{s.ferias}</strong>
+                      </div>
+                      <div className="bg-amber-50/70 p-1.5 rounded border border-amber-200">
+                        <span className="text-amber-700 block text-[10px]">Atestados</span>
+                        <strong className="text-amber-800">{s.atestados}</strong>
+                      </div>
+                      <div className="bg-slate-100 p-1.5 rounded border border-slate-200">
+                        <span className="text-slate-500 block text-[10px]">Pendentes</span>
+                        <strong className="text-slate-700">{s.pendentes}</strong>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* TABELA PARA DESKTOP E IMPRESSÃO (hidden md:block print:block) */}
+              <div className="hidden md:block print:block overflow-x-auto">
+                <table className="w-full text-left text-xs border-collapse border border-slate-200 min-w-[640px] sm:min-w-0">
+                  <thead>
+                    <tr className="bg-slate-100 text-slate-700 font-semibold border-b border-slate-200">
+                      <th className="p-2 border-r border-slate-200">Setor</th>
+                      <th className="p-2 text-center border-r border-slate-200">Escalados</th>
+                      <th className="p-2 text-center border-r border-slate-200">Presentes</th>
+                      <th className="p-2 text-center border-r border-slate-200">Ausentes</th>
+                      <th className="p-2 text-center border-r border-slate-200">Férias</th>
+                      <th className="p-2 text-center border-r border-slate-200">Atestados</th>
+                      <th className="p-2 text-center border-r border-slate-200">Pendentes</th>
+                      <th className="p-2 text-center border-r border-slate-200">Presença %</th>
+                      <th className="p-2 text-center">Status</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200">
+                    {resumoDia.setores.map(s => (
+                      <tr key={s.setor_id} className="hover:bg-slate-50">
+                        <td className="p-2 font-bold text-slate-800 border-r border-slate-200">Setor {s.setor_nome}</td>
+                        <td className="p-2 text-center border-r border-slate-200">{s.escalados}</td>
+                        <td className="p-2 text-center text-emerald-700 font-bold border-r border-slate-200">{s.presentes}</td>
+                        <td className="p-2 text-center text-rose-700 font-bold border-r border-slate-200">{s.ausentes}</td>
+                        <td className="p-2 text-center text-blue-700 border-r border-slate-200">{s.ferias}</td>
+                        <td className="p-2 text-center text-amber-700 border-r border-slate-200">{s.atestados}</td>
+                        <td className="p-2 text-center text-slate-500 border-r border-slate-200">{s.pendentes}</td>
+                        <td className="p-2 text-center font-bold border-r border-slate-200">{s.percentualPresenca}%</td>
+                        <td className="p-2 text-center">
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                            s.status === 'NORMAL' ? 'bg-emerald-100 text-emerald-800' :
+                            s.status === 'ATENÇÃO' ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800'
+                          }`}>
+                            {s.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         )}
@@ -329,39 +390,88 @@ export const RelatoriosView: React.FC<RelatoriosViewProps> = ({
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 mb-3">
               Mapeamento de Férias e Afastamentos Médicos Registrados
             </h3>
-            <table className="w-full text-left text-xs border-collapse border border-slate-200">
-              <thead>
-                <tr className="bg-slate-100 text-slate-700 font-semibold border-b border-slate-200">
-                  <th className="p-2 border-r border-slate-200">Profissional</th>
-                  <th className="p-2 border-r border-slate-200">Matrícula</th>
-                  <th className="p-2 border-r border-slate-200">Tipo de Afastamento</th>
-                  <th className="p-2 text-center border-r border-slate-200">Período Inicial</th>
-                  <th className="p-2 text-center border-r border-slate-200">Período Final</th>
-                  <th className="p-2">Observação ADM</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-200">
-                {todosAfastamentos.map(a => {
+
+            {/* CARDS PARA MOBILE (md:hidden print:hidden) */}
+            <div className="md:hidden print:hidden space-y-3">
+              {todosAfastamentos.length === 0 ? (
+                <div className="p-6 text-center text-slate-500 text-xs bg-slate-50 rounded-xl border border-slate-200">
+                  Nenhum registro de férias ou atestado encontrado.
+                </div>
+              ) : (
+                todosAfastamentos.map(a => {
                   const prof = profissionais.find(p => p.id === a.profissional_id);
                   return (
-                    <tr key={a.id} className="hover:bg-slate-50">
-                      <td className="p-2 font-bold text-slate-800 border-r border-slate-200">{prof?.nome_completo}</td>
-                      <td className="p-2 font-mono text-slate-600 border-r border-slate-200">{prof?.matricula}</td>
-                      <td className="p-2 border-r border-slate-200 font-semibold">
-                        <span className={`px-2 py-0.5 rounded text-[10px] uppercase ${
+                    <div 
+                      key={`mob-afast-${a.id}`}
+                      className="bg-slate-50 rounded-xl border border-slate-200 p-3.5 space-y-2"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <h4 className="font-bold text-slate-900 text-sm">{prof?.nome_completo || 'Profissional'}</h4>
+                          <span className="font-mono text-[11px] text-slate-400">Mat: {prof?.matricula || '-'}</span>
+                        </div>
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase shrink-0 ${
                           a.tipo === 'FÉRIAS' ? 'bg-blue-100 text-blue-800' : 'bg-amber-100 text-amber-800'
                         }`}>
                           {a.tipo}
                         </span>
-                      </td>
-                      <td className="p-2 text-center border-r border-slate-200">{a.data_inicio.split('-').reverse().join('/')}</td>
-                      <td className="p-2 text-center border-r border-slate-200">{a.data_fim.split('-').reverse().join('/')}</td>
-                      <td className="p-2 text-slate-600">{a.observacao || '-'}</td>
-                    </tr>
+                      </div>
+
+                      <div className="text-xs text-slate-600 pt-1 border-t border-slate-200/60 flex items-center justify-between">
+                        <span className="text-slate-500">Período:</span>
+                        <span className="font-semibold text-slate-800">
+                          {a.data_inicio.split('-').reverse().join('/')} até {a.data_fim.split('-').reverse().join('/')}
+                        </span>
+                      </div>
+
+                      {a.observacao && (
+                        <div className="text-[11px] text-slate-500 bg-white p-2 rounded border border-slate-200">
+                          <strong className="text-slate-600 block text-[10px] uppercase">Observação ADM:</strong>
+                          {a.observacao}
+                        </div>
+                      )}
+                    </div>
                   );
-                })}
-              </tbody>
-            </table>
+                })
+              )}
+            </div>
+
+            {/* TABELA PARA DESKTOP E IMPRESSÃO (hidden md:block print:block) */}
+            <div className="hidden md:block print:block overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse border border-slate-200 min-w-[640px] sm:min-w-0">
+                <thead>
+                  <tr className="bg-slate-100 text-slate-700 font-semibold border-b border-slate-200">
+                    <th className="p-2 border-r border-slate-200">Profissional</th>
+                    <th className="p-2 border-r border-slate-200">Matrícula</th>
+                    <th className="p-2 border-r border-slate-200">Tipo de Afastamento</th>
+                    <th className="p-2 text-center border-r border-slate-200">Período Inicial</th>
+                    <th className="p-2 text-center border-r border-slate-200">Período Final</th>
+                    <th className="p-2">Observação ADM</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200">
+                  {todosAfastamentos.map(a => {
+                    const prof = profissionais.find(p => p.id === a.profissional_id);
+                    return (
+                      <tr key={a.id} className="hover:bg-slate-50">
+                        <td className="p-2 font-bold text-slate-800 border-r border-slate-200">{prof?.nome_completo}</td>
+                        <td className="p-2 font-mono text-slate-600 border-r border-slate-200">{prof?.matricula}</td>
+                        <td className="p-2 border-r border-slate-200 font-semibold">
+                          <span className={`px-2 py-0.5 rounded text-[10px] uppercase ${
+                            a.tipo === 'FÉRIAS' ? 'bg-blue-100 text-blue-800' : 'bg-amber-100 text-amber-800'
+                          }`}>
+                            {a.tipo}
+                          </span>
+                        </td>
+                        <td className="p-2 text-center border-r border-slate-200">{a.data_inicio.split('-').reverse().join('/')}</td>
+                        <td className="p-2 text-center border-r border-slate-200">{a.data_fim.split('-').reverse().join('/')}</td>
+                        <td className="p-2 text-slate-600">{a.observacao || '-'}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
 
@@ -369,21 +479,22 @@ export const RelatoriosView: React.FC<RelatoriosViewProps> = ({
         {(tipoRelatorio === 'SETOR' || tipoRelatorio === 'PROFISSIONAL') && (
           <div>
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 mb-3">
-              Listagem Operacional de Escalas e Ocorrências ({dataInicio} até {dataFim})
+              Listagem Operacional de Escalas e Ocorrências ({dataInicio.split('-').reverse().join('/')} até {dataFim.split('-').reverse().join('/')})
             </h3>
-            <table className="w-full text-left text-xs border-collapse border border-slate-200">
-              <thead>
-                <tr className="bg-slate-100 text-slate-700 font-semibold border-b border-slate-200">
-                  <th className="p-2 border-r border-slate-200">Data</th>
-                  <th className="p-2 border-r border-slate-200">Profissional</th>
-                  <th className="p-2 border-r border-slate-200">Cargo</th>
-                  <th className="p-2 border-r border-slate-200">Setor</th>
-                  <th className="p-2 border-r border-slate-200">Turno</th>
-                  <th className="p-2 text-center">Situação</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-200">
-                {todasEscalas
+
+            {/* CARDS PARA MOBILE (md:hidden print:hidden) */}
+            <div className="md:hidden print:hidden space-y-3">
+              {todasEscalas
+                .filter(e => {
+                  if (selectedSetorId !== 'TODOS' && e.setor_id !== selectedSetorId) return false;
+                  return e.data >= dataInicio && e.data <= dataFim;
+                })
+                .length === 0 ? (
+                <div className="p-6 text-center text-slate-500 text-xs bg-slate-50 rounded-xl border border-slate-200">
+                  Nenhuma escala encontrada com os filtros selecionados.
+                </div>
+              ) : (
+                todasEscalas
                   .filter(e => {
                     if (selectedSetorId !== 'TODOS' && e.setor_id !== selectedSetorId) return false;
                     return e.data >= dataInicio && e.data <= dataFim;
@@ -396,27 +507,88 @@ export const RelatoriosView: React.FC<RelatoriosViewProps> = ({
                     const sit = reg ? reg.situacao : 'PENDENTE';
 
                     return (
-                      <tr key={e.id} className="hover:bg-slate-50">
-                        <td className="p-2 border-r border-slate-200 font-mono">{e.data.split('-').reverse().join('/')}</td>
-                        <td className="p-2 font-bold text-slate-800 border-r border-slate-200">{prof?.nome_completo}</td>
-                        <td className="p-2 border-r border-slate-200">{cargo?.nome}</td>
-                        <td className="p-2 border-r border-slate-200">Setor {setor?.nome}</td>
-                        <td className="p-2 border-r border-slate-200 uppercase">{e.turno}</td>
-                        <td className="p-2 text-center">
-                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                      <div 
+                        key={`mob-escala-${e.id}`}
+                        className="bg-slate-50 rounded-xl border border-slate-200 p-3.5 space-y-2"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <h4 className="font-bold text-slate-900 text-sm">{prof?.nome_completo || 'Profissional'}</h4>
+                            <div className="flex items-center gap-1.5 text-xs text-slate-500 mt-0.5 flex-wrap">
+                              <span className="font-medium text-slate-700">{cargo?.nome}</span>
+                              <span>•</span>
+                              <span>Setor {setor?.nome}</span>
+                            </div>
+                          </div>
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase shrink-0 ${
                             sit === 'PRESENTE' ? 'bg-emerald-100 text-emerald-800' :
                             sit === 'AUSENTE' ? 'bg-rose-100 text-rose-800' :
                             sit === 'FÉRIAS' ? 'bg-blue-100 text-blue-800' :
-                            sit === 'ATESTADO' ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-600'
+                            sit === 'ATESTADO' ? 'bg-amber-100 text-amber-800' : 'bg-slate-200 text-slate-700'
                           }`}>
                             {sit}
                           </span>
-                        </td>
-                      </tr>
+                        </div>
+
+                        <div className="flex items-center justify-between text-xs pt-1.5 border-t border-slate-200/60">
+                          <span className="font-mono text-slate-600">{e.data.split('-').reverse().join('/')}</span>
+                          <span className="font-bold uppercase text-[11px] text-slate-700">Turno: {e.turno}</span>
+                        </div>
+                      </div>
                     );
-                  })}
-              </tbody>
-            </table>
+                  })
+              )}
+            </div>
+
+            {/* TABELA PARA DESKTOP E IMPRESSÃO (hidden md:block print:block) */}
+            <div className="hidden md:block print:block overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse border border-slate-200 min-w-[640px] sm:min-w-0">
+                <thead>
+                  <tr className="bg-slate-100 text-slate-700 font-semibold border-b border-slate-200">
+                    <th className="p-2 border-r border-slate-200">Data</th>
+                    <th className="p-2 border-r border-slate-200">Profissional</th>
+                    <th className="p-2 border-r border-slate-200">Cargo</th>
+                    <th className="p-2 border-r border-slate-200">Setor</th>
+                    <th className="p-2 border-r border-slate-200">Turno</th>
+                    <th className="p-2 text-center">Situação</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200">
+                  {todasEscalas
+                    .filter(e => {
+                      if (selectedSetorId !== 'TODOS' && e.setor_id !== selectedSetorId) return false;
+                      return e.data >= dataInicio && e.data <= dataFim;
+                    })
+                    .map(e => {
+                      const prof = profissionais.find(p => p.id === e.profissional_id);
+                      const cargo = cargos.find(c => c.id === e.cargo_id);
+                      const setor = setores.find(s => s.id === e.setor_id);
+                      const reg = todosPlantao.find(r => r.escala_id === e.id);
+                      const sit = reg ? reg.situacao : 'PENDENTE';
+
+                      return (
+                        <tr key={e.id} className="hover:bg-slate-50">
+                          <td className="p-2 border-r border-slate-200 font-mono">{e.data.split('-').reverse().join('/')}</td>
+                          <td className="p-2 font-bold text-slate-800 border-r border-slate-200">{prof?.nome_completo}</td>
+                          <td className="p-2 border-r border-slate-200">{cargo?.nome}</td>
+                          <td className="p-2 border-r border-slate-200">Setor {setor?.nome}</td>
+                          <td className="p-2 border-r border-slate-200 uppercase">{e.turno}</td>
+                          <td className="p-2 text-center">
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                              sit === 'PRESENTE' ? 'bg-emerald-100 text-emerald-800' :
+                              sit === 'AUSENTE' ? 'bg-rose-100 text-rose-800' :
+                              sit === 'FÉRIAS' ? 'bg-blue-100 text-blue-800' :
+                              sit === 'ATESTADO' ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-600'
+                            }`}>
+                              {sit}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </div>

@@ -64,7 +64,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
         </div>
 
         {/* Login Card */}
-        <div className="bg-white rounded-2xl shadow-2xl p-8 border border-slate-200">
+        <div className="bg-white rounded-2xl shadow-2xl p-5 sm:p-8 border border-slate-200">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="flex items-center justify-between pb-2 border-b border-slate-100">
               <span className="text-xs font-bold uppercase tracking-wider text-slate-700">
@@ -95,7 +95,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
                   value={login}
                   onChange={(e) => setLogin(e.target.value)}
                   placeholder="admin ou padrao"
-                  className="w-full text-xs pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none font-medium"
+                  className="w-full text-xs pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none font-medium min-h-[44px]"
                 />
               </div>
             </div>
@@ -113,7 +113,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
                   value={senha}
                   onChange={(e) => setSenha(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full text-xs pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                  className="w-full text-xs pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none min-h-[44px]"
                 />
               </div>
             </div>
@@ -121,7 +121,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
             <button
               id="btn-login-submit"
               type="submit"
-              className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-lg shadow-xs transition-colors flex items-center justify-center gap-2"
+              className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-lg shadow-xs transition-colors flex items-center justify-center gap-2 min-h-[44px]"
             >
               <span>Entrar no Sistema</span>
               <ArrowRight className="w-4 h-4" />
@@ -140,14 +140,14 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
               </p>
             </div>
 
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <button
                 type="button"
                 id="btn-quick-login-admin"
                 onClick={() => handleQuickLogin('ADM')}
-                className="py-1.5 px-2 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 rounded text-[11px] font-semibold transition-colors flex items-center justify-center gap-1"
+                className="py-2.5 px-2 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 min-h-[44px]"
               >
-                <ShieldCheck className="w-3.5 h-3.5 text-amber-600" />
+                <ShieldCheck className="w-4 h-4 text-amber-600" />
                 <span>Acesso Rápido ADM</span>
               </button>
 
@@ -155,9 +155,9 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
                 type="button"
                 id="btn-quick-login-padrao"
                 onClick={() => handleQuickLogin('PADRÃO')}
-                className="py-1.5 px-2 bg-blue-50 hover:bg-blue-100 text-blue-900 border border-blue-200 rounded text-[11px] font-semibold transition-colors flex items-center justify-center gap-1"
+                className="py-2.5 px-2 bg-blue-50 hover:bg-blue-100 text-blue-900 border border-blue-200 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 min-h-[44px]"
               >
-                <User className="w-3.5 h-3.5 text-blue-600" />
+                <User className="w-4 h-4 text-blue-600" />
                 <span>Acesso Usuário Padrão</span>
               </button>
             </div>

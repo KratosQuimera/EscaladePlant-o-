@@ -150,7 +150,7 @@ export const SetoresCargosView: React.FC<SetoresCargosViewProps> = ({
   };
 
   return (
-    <div id="setores-cargos-view" className="p-6 space-y-5 max-w-7xl mx-auto">
+    <div id="setores-cargos-view" className="p-3 sm:p-6 space-y-4 sm:space-y-5 max-w-7xl mx-auto">
       {feedback && (
         <div className="fixed top-4 right-4 bg-emerald-600 text-white px-4 py-2 rounded-lg shadow-xl text-xs font-semibold z-50 animate-in fade-in">
           {feedback}
@@ -160,7 +160,7 @@ export const SetoresCargosView: React.FC<SetoresCargosViewProps> = ({
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
         <div>
-          <h2 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+          <h2 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
             <Building2 className="w-5 h-5 text-emerald-600" />
             <span>ESTRUTURA: SETORES E CARGOS</span>
           </h2>
@@ -171,26 +171,26 @@ export const SetoresCargosView: React.FC<SetoresCargosViewProps> = ({
 
         {/* Alternância Setores vs Cargos */}
         <div className="flex items-center gap-2">
-          <div className="bg-slate-100 p-1 rounded-lg border border-slate-200 flex items-center">
+          <div className="bg-slate-100 p-1 rounded-lg border border-slate-200 flex items-center w-full sm:w-auto">
             <button
               onClick={() => setActiveTab('SETORES')}
-              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
+              className={`flex-1 sm:flex-initial px-3 py-1.5 rounded-md text-xs font-semibold transition-all min-h-[38px] ${
                 activeTab === 'SETORES'
                   ? 'bg-white text-slate-900 shadow-2xs'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              Setores Hospitalares ({setores.length})
+              Setores ({setores.length})
             </button>
             <button
               onClick={() => setActiveTab('CARGOS')}
-              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
+              className={`flex-1 sm:flex-initial px-3 py-1.5 rounded-md text-xs font-semibold transition-all min-h-[38px] ${
                 activeTab === 'CARGOS'
                   ? 'bg-white text-slate-900 shadow-2xs'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              Cargos e Funções ({cargos.length})
+              Cargos ({cargos.length})
             </button>
           </div>
         </div>
@@ -199,7 +199,7 @@ export const SetoresCargosView: React.FC<SetoresCargosViewProps> = ({
       {/* TAB SETORES */}
       {activeTab === 'SETORES' && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <p className="text-xs text-slate-500">
               * Setores criados aqui são refletidos automaticamente no Dashboard e nos relatórios.
             </p>
@@ -207,7 +207,7 @@ export const SetoresCargosView: React.FC<SetoresCargosViewProps> = ({
               <button
                 id="btn-adicionar-setor"
                 onClick={handleOpenNewSetor}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors"
+                className="flex items-center justify-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors w-full sm:w-auto min-h-[38px]"
               >
                 <Plus className="w-4 h-4" />
                 <span>Adicionar Setor</span>
@@ -285,7 +285,7 @@ export const SetoresCargosView: React.FC<SetoresCargosViewProps> = ({
       {/* TAB CARGOS */}
       {activeTab === 'CARGOS' && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <p className="text-xs text-slate-500">
               * Cargos e especialidades para classificação da equipe hospitalar.
             </p>
@@ -293,7 +293,7 @@ export const SetoresCargosView: React.FC<SetoresCargosViewProps> = ({
               <button
                 id="btn-adicionar-cargo"
                 onClick={handleOpenNewCargo}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors"
+                className="flex items-center justify-center gap-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors w-full sm:w-auto min-h-[38px]"
               >
                 <Plus className="w-4 h-4" />
                 <span>Adicionar Cargo</span>
@@ -301,7 +301,59 @@ export const SetoresCargosView: React.FC<SetoresCargosViewProps> = ({
             )}
           </div>
 
-          <div className="bg-white rounded-xl border border-slate-200 shadow-2xs overflow-hidden">
+          {/* Versão Mobile dos Cargos: Cards limpos e touch-friendly (md:hidden) */}
+          <div className="md:hidden space-y-2.5">
+            {cargos.map(cargo => {
+              const profs = profissionais.filter(p => p.cargo_id === cargo.id);
+
+              return (
+                <div 
+                  key={`mob-cargo-${cargo.id}`}
+                  className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-2xs space-y-2.5"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <h4 className="font-bold text-sm text-slate-900">{cargo.nome}</h4>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        {profs.length} profissional(is) vinculados
+                      </p>
+                    </div>
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase shrink-0 ${
+                      cargo.ativo ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-600'
+                    }`}>
+                      {cargo.ativo ? 'Ativo' : 'Inativo'}
+                    </span>
+                  </div>
+
+                  {isAdmin && (
+                    <div className="pt-2 border-t border-slate-100 flex items-center justify-end gap-2">
+                      <button
+                        onClick={() => handleOpenEditCargo(cargo)}
+                        className="px-2.5 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg text-xs font-medium flex items-center gap-1 min-h-[36px]"
+                      >
+                        <Edit className="w-3.5 h-3.5" />
+                        <span>Editar</span>
+                      </button>
+                      <button
+                        onClick={() => handleToggleCargo(cargo)}
+                        className={`px-2.5 py-1.5 rounded-lg text-xs font-medium border flex items-center gap-1 min-h-[36px] ${
+                          cargo.ativo 
+                            ? 'bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100' 
+                            : 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100'
+                        }`}
+                      >
+                        <Power className="w-3.5 h-3.5" />
+                        <span>{cargo.ativo ? 'Desativar' : 'Ativar'}</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Versão Desktop dos Cargos: Tabela clássica (hidden md:block) */}
+          <div className="hidden md:block bg-white rounded-xl border border-slate-200 shadow-2xs overflow-hidden">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
@@ -363,13 +415,13 @@ export const SetoresCargosView: React.FC<SetoresCargosViewProps> = ({
 
       {/* Modal Setor */}
       {isSetorModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 border border-slate-200 animate-in fade-in">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 z-50">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-4 sm:p-6 border border-slate-200 max-h-[90vh] overflow-y-auto animate-in fade-in">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <h3 className="font-bold text-slate-900 text-sm">
                 {editingSetor ? 'Editar Setor' : 'Adicionar Novo Setor'}
               </h3>
-              <button onClick={() => setIsSetorModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+              <button onClick={() => setIsSetorModalOpen(false)} className="text-slate-400 hover:text-slate-600 p-1">
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -391,7 +443,7 @@ export const SetoresCargosView: React.FC<SetoresCargosViewProps> = ({
                   value={nomeSetor}
                   onChange={(e) => setNomeSetor(e.target.value)}
                   placeholder="Ex: 8°A, 8°B, UTI Adulto..."
-                  className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-1 focus:ring-emerald-500 focus:outline-none font-semibold"
+                  className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-1 focus:ring-emerald-500 focus:outline-none font-semibold min-h-[40px]"
                 />
               </div>
 
@@ -404,7 +456,7 @@ export const SetoresCargosView: React.FC<SetoresCargosViewProps> = ({
                   value={descSetor}
                   onChange={(e) => setDescSetor(e.target.value)}
                   placeholder="Ex: Ala de Recuperação Pós-Anestésica..."
-                  className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+                  className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-1 focus:ring-emerald-500 focus:outline-none min-h-[40px]"
                 />
               </div>
 
@@ -412,13 +464,13 @@ export const SetoresCargosView: React.FC<SetoresCargosViewProps> = ({
                 <button
                   type="button"
                   onClick={() => setIsSetorModalOpen(false)}
-                  className="px-3 py-2 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                  className="px-3 py-2 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors min-h-[38px]"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-colors shadow-xs"
+                  className="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-colors shadow-xs min-h-[38px]"
                 >
                   Salvar Setor
                 </button>
@@ -430,13 +482,13 @@ export const SetoresCargosView: React.FC<SetoresCargosViewProps> = ({
 
       {/* Modal Cargo */}
       {isCargoModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 border border-slate-200 animate-in fade-in">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 z-50">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-4 sm:p-6 border border-slate-200 max-h-[90vh] overflow-y-auto animate-in fade-in">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <h3 className="font-bold text-slate-900 text-sm">
                 {editingCargo ? 'Editar Cargo' : 'Adicionar Novo Cargo'}
               </h3>
-              <button onClick={() => setIsCargoModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+              <button onClick={() => setIsCargoModalOpen(false)} className="text-slate-400 hover:text-slate-600 p-1">
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -458,7 +510,7 @@ export const SetoresCargosView: React.FC<SetoresCargosViewProps> = ({
                   value={nomeCargo}
                   onChange={(e) => setNomeCargo(e.target.value)}
                   placeholder="Ex: Neurologista, Fisioterapeuta..."
-                  className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+                  className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-1 focus:ring-emerald-500 focus:outline-none min-h-[40px]"
                 />
               </div>
 
@@ -466,13 +518,13 @@ export const SetoresCargosView: React.FC<SetoresCargosViewProps> = ({
                 <button
                   type="button"
                   onClick={() => setIsCargoModalOpen(false)}
-                  className="px-3 py-2 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                  className="px-3 py-2 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors min-h-[38px]"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-colors shadow-xs"
+                  className="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-colors shadow-xs min-h-[38px]"
                 >
                   Salvar Cargo
                 </button>

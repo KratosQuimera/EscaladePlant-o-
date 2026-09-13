@@ -196,7 +196,7 @@ export const ProfissionaisView: React.FC<ProfissionaisViewProps> = ({
   });
 
   return (
-    <div id="profissionais-view" className="p-6 space-y-5 max-w-7xl mx-auto">
+    <div id="profissionais-view" className="p-3 sm:p-6 space-y-4 sm:space-y-5 max-w-7xl mx-auto">
       {/* Toast */}
       {feedback && (
         <div className="fixed top-4 right-4 bg-emerald-600 text-white px-4 py-2 rounded-lg shadow-xl text-xs font-semibold z-50 animate-in fade-in">
@@ -207,7 +207,7 @@ export const ProfissionaisView: React.FC<ProfissionaisViewProps> = ({
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
         <div>
-          <h2 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+          <h2 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
             <Users className="w-5 h-5 text-emerald-600" />
             <span>CADASTRO DE PROFISSIONAIS</span>
           </h2>
@@ -220,7 +220,7 @@ export const ProfissionaisView: React.FC<ProfissionaisViewProps> = ({
           <button
             id="btn-novo-profissional"
             onClick={handleOpenNew}
-            className="flex items-center gap-2 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors"
+            className="flex items-center justify-center gap-2 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors min-h-[40px] w-full sm:w-auto"
           >
             <UserPlus className="w-4 h-4" />
             <span>Novo Profissional</span>
@@ -229,7 +229,7 @@ export const ProfissionaisView: React.FC<ProfissionaisViewProps> = ({
       </div>
 
       {/* Filtros */}
-      <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-2xs grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="bg-white rounded-xl border border-slate-200 p-3 sm:p-3.5 shadow-2xs grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
         <div className="relative">
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
@@ -237,7 +237,7 @@ export const ProfissionaisView: React.FC<ProfissionaisViewProps> = ({
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Buscar por nome, matrícula ou login..."
-            className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:bg-white focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+            className="w-full pl-9 pr-3 py-2 sm:py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:bg-white focus:ring-1 focus:ring-emerald-500 focus:outline-none min-h-[38px] sm:min-h-0"
           />
         </div>
 
@@ -282,8 +282,110 @@ export const ProfissionaisView: React.FC<ProfissionaisViewProps> = ({
         </div>
       </div>
 
-      {/* Tabela de Profissionais */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-2xs overflow-hidden">
+      {/* VISUALIZAÇÃO MOBILE (md:hidden) */}
+      <div className="md:hidden space-y-3">
+        {filtered.length === 0 ? (
+          <div className="bg-white rounded-xl border border-slate-200 p-8 text-center text-slate-500">
+            Nenhum profissional encontrado com os filtros selecionados.
+          </div>
+        ) : (
+          filtered.map(prof => {
+            const cargoNome = cargos.find(c => c.id === prof.cargo_id)?.nome;
+            const setorNome = setores.find(s => s.id === prof.setor_id)?.nome;
+            const tipoAcesso = prof.tipo_usuario || 'SEM_ACESSO';
+
+            return (
+              <div 
+                key={`mobile-prof-${prof.id}`}
+                className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-2xs space-y-2.5"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <h3 className="font-bold text-slate-900 text-sm">{prof.nome_completo}</h3>
+                    <div className="flex items-center gap-1.5 text-xs text-slate-500 mt-0.5 flex-wrap">
+                      <span className="font-mono text-[11px] text-slate-400">Mat: {prof.matricula}</span>
+                      <span>•</span>
+                      <span className="font-medium text-slate-700">{cargoNome}</span>
+                      <span>•</span>
+                      <span>Setor {setorNome}</span>
+                    </div>
+                  </div>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase shrink-0 ${
+                    prof.status === 'ATIVO'
+                      ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                      : 'bg-slate-100 text-slate-500 border border-slate-200'
+                  }`}>
+                    {prof.status}
+                  </span>
+                </div>
+
+                {/* Nível de Acesso e Contato */}
+                <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-100 flex-wrap gap-2">
+                  <div>
+                    {tipoAcesso === 'ADM' ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-900 border border-amber-300">
+                        <ShieldCheck className="w-3 h-3 text-amber-600 shrink-0" />
+                        <span>ADM</span>
+                        {prof.login_usuario && (
+                          <span className="font-mono font-medium text-amber-700">(@{prof.login_usuario})</span>
+                        )}
+                      </span>
+                    ) : tipoAcesso === 'PADRÃO' ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-900 border border-blue-300">
+                        <UserCheck className="w-3 h-3 text-blue-600 shrink-0" />
+                        <span>PADRÃO</span>
+                        {prof.login_usuario && (
+                          <span className="font-mono font-medium text-blue-700">(@{prof.login_usuario})</span>
+                        )}
+                      </span>
+                    ) : (
+                      <span className="text-[10px] text-slate-400">Sem Acesso</span>
+                    )}
+                  </div>
+
+                  {(prof.telefone || prof.email) && (
+                    <div className="flex items-center gap-2 text-slate-500 text-xs">
+                      {prof.telefone && (
+                        <a href={`tel:${prof.telefone}`} className="hover:text-emerald-700 flex items-center gap-1 text-[11px]">
+                          <Phone className="w-3 h-3 text-slate-400" />
+                          <span>{prof.telefone}</span>
+                        </a>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Ações Mobile */}
+                {isAdmin && (
+                  <div className="flex items-center gap-2 pt-2 border-t border-slate-100">
+                    <button
+                      onClick={() => handleOpenEdit(prof)}
+                      className="flex-1 py-1.5 px-2 bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 min-h-[38px]"
+                    >
+                      <Edit className="w-3.5 h-3.5 text-slate-500" />
+                      <span>Editar</span>
+                    </button>
+                    <button
+                      onClick={() => handleToggleStatus(prof)}
+                      className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 min-h-[38px] border transition-colors ${
+                        prof.status === 'ATIVO'
+                          ? 'bg-rose-50/50 hover:bg-rose-100/70 text-rose-700 border-rose-200'
+                          : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200'
+                      }`}
+                    >
+                      <Power className="w-3.5 h-3.5" />
+                      <span>{prof.status === 'ATIVO' ? 'Inativar' : 'Ativar'}</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      {/* Tabela de Profissionais DESKTOP */}
+      <div className="hidden md:block bg-white rounded-xl border border-slate-200 shadow-2xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
@@ -408,14 +510,14 @@ export const ProfissionaisView: React.FC<ProfissionaisViewProps> = ({
 
       {/* Modal Criar / Editar Profissional */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6 border border-slate-200 animate-in fade-in max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 z-50">
+          <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full p-4 sm:p-6 border border-slate-200 animate-in fade-in max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
-                <UserPlus className="w-4 h-4 text-emerald-600" />
+                <UserPlus className="w-4 h-4 text-emerald-600 shrink-0" />
                 <span>{editingProf ? 'Editar Profissional' : 'Novo Profissional'}</span>
               </h3>
-              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600 p-1">
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -438,11 +540,11 @@ export const ProfissionaisView: React.FC<ProfissionaisViewProps> = ({
                   value={nome}
                   onChange={(e) => handleNomeChange(e.target.value)}
                   placeholder="Ex: Dr. Carlos Eduardo Silveira"
-                  className="w-full text-xs p-2 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+                  className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-1 focus:ring-emerald-500 focus:outline-none min-h-[40px]"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">
                     Matrícula (Única) <span className="text-emerald-600">*</span>
@@ -453,7 +555,7 @@ export const ProfissionaisView: React.FC<ProfissionaisViewProps> = ({
                     value={matricula}
                     onChange={(e) => setMatricula(e.target.value.toUpperCase())}
                     placeholder="Ex: MED-105"
-                    className="w-full text-xs p-2 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-1 focus:ring-emerald-500 focus:outline-none font-mono"
+                    className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-1 focus:ring-emerald-500 focus:outline-none font-mono min-h-[40px]"
                   />
                 </div>
 
@@ -464,7 +566,7 @@ export const ProfissionaisView: React.FC<ProfissionaisViewProps> = ({
                   <select
                     value={cargoId}
                     onChange={(e) => setCargoId(e.target.value)}
-                    className="w-full text-xs p-2 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-1 focus:ring-emerald-500 focus:outline-none cursor-pointer"
+                    className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-1 focus:ring-emerald-500 focus:outline-none cursor-pointer min-h-[40px]"
                   >
                     {cargos.map(c => (
                       <option key={c.id} value={c.id}>{c.nome}</option>
@@ -473,7 +575,7 @@ export const ProfissionaisView: React.FC<ProfissionaisViewProps> = ({
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">
                     Setor de Lotação <span className="text-emerald-600">*</span>
@@ -481,7 +583,7 @@ export const ProfissionaisView: React.FC<ProfissionaisViewProps> = ({
                   <select
                     value={setorId}
                     onChange={(e) => setSetorId(e.target.value)}
-                    className="w-full text-xs p-2 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-1 focus:ring-emerald-500 focus:outline-none cursor-pointer"
+                    className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-1 focus:ring-emerald-500 focus:outline-none cursor-pointer min-h-[40px]"
                   >
                     {setores.map(s => (
                       <option key={s.id} value={s.id}>Setor {s.nome}</option>
@@ -498,7 +600,7 @@ export const ProfissionaisView: React.FC<ProfissionaisViewProps> = ({
                     value={telefone}
                     onChange={(e) => setTelefone(e.target.value)}
                     placeholder="(11) 99999-0000"
-                    className="w-full text-xs p-2 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+                    className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-1 focus:ring-emerald-500 focus:outline-none min-h-[40px]"
                   />
                 </div>
               </div>
@@ -512,7 +614,7 @@ export const ProfissionaisView: React.FC<ProfissionaisViewProps> = ({
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="profissional@hospital.local"
-                  className="w-full text-xs p-2 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+                  className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-1 focus:ring-emerald-500 focus:outline-none min-h-[40px]"
                 />
               </div>
 

@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+    <defs>
+      <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#059669" />
+        <stop offset="100%" stop-color="#047857" />
+      </linearGradient>
+      <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+        <feDropShadow dx="0" dy="10.24" stdDeviation="15.36" flood-color="#064e3b" flood-opacity="0.3"/>
+      </filter>
+    </defs>
+    <!-- Background rounded squircle -->
+    <rect width="512" height="512" rx="112.64" fill="url(#grad)" />
+    
+    <!-- Outer Shield / Dial Circle -->
+    <circle cx="256" cy="256" r="171.21280000000002" fill="none" stroke="#ffffff" stroke-width="17.92" stroke-opacity="0.25" />
+    
+    <!-- Central Cross & Clock Motif -->
+    <!-- Medical Cross -->
+    <rect x="225.28" y="143.36" width="61.44" height="225.28" rx="12.8" fill="#ffffff" filter="url(#shadow)" />
+    <rect x="143.36" y="225.28" width="225.28" height="61.44" rx="12.8" fill="#ffffff" filter="url(#shadow)" />
+    
+    <!-- Center Clock Dial Accent -->
+    <circle cx="256" cy="256" r="30.72" fill="#059669" />
+    <circle cx="256" cy="256" r="12.8" fill="#ffffff" />
+  </svg>

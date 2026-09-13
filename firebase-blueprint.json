@@ -1,0 +1,258 @@
+{
+  "entities": {
+    "user": {
+      "title": "User",
+      "description": "Usuário de acesso ao sistema hospitalar",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "nome": { "type": "string" },
+        "login": { "type": "string" },
+        "senhaHash": { "type": "string" },
+        "tipo_acesso": { "type": "string", "enum": ["ADM", "PADRÃO", "PADRAO"] },
+        "ativo": { "type": "boolean" },
+        "status": { "type": "string" },
+        "deve_alterar_senha": { "type": "boolean" },
+        "profissional_id": { "type": "string" },
+        "criado_em": { "type": "string" },
+        "ultimo_login": { "type": "string" }
+      },
+      "required": ["id", "nome", "login", "tipo_acesso", "ativo", "criado_em"]
+    },
+    "setor": {
+      "title": "Setor",
+      "description": "Setor ou ala hospitalar",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "nome": { "type": "string" },
+        "descricao": { "type": "string" },
+        "ativo": { "type": "boolean" },
+        "criado_em": { "type": "string" }
+      },
+      "required": ["id", "nome", "ativo", "criado_em"]
+    },
+    "cargo": {
+      "title": "Cargo",
+      "description": "Cargo ou especialidade médica/enfermagem",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "nome": { "type": "string" },
+        "ativo": { "type": "boolean" },
+        "criado_em": { "type": "string" }
+      },
+      "required": ["id", "nome", "ativo", "criado_em"]
+    },
+    "profissional": {
+      "title": "Profissional",
+      "description": "Profissional de saúde cadastrado",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "nome_completo": { "type": "string" },
+        "matricula": { "type": "string" },
+        "cargo_id": { "type": "string" },
+        "setor_id": { "type": "string" },
+        "telefone": { "type": "string" },
+        "email": { "type": "string" },
+        "status": { "type": "string", "enum": ["ATIVO", "INATIVO"] },
+        "observacao": { "type": "string" },
+        "usuario_id": { "type": "string" },
+        "tipo_usuario": { "type": "string" },
+        "login_usuario": { "type": "string" },
+        "criado_em": { "type": "string" }
+      },
+      "required": ["id", "nome_completo", "matricula", "cargo_id", "setor_id", "status", "criado_em"]
+    },
+    "escala": {
+      "title": "Escala",
+      "description": "Escala de plantão hospitalar",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "data": { "type": "string" },
+        "setor_id": { "type": "string" },
+        "profissional_id": { "type": "string" },
+        "cargo_id": { "type": "string" },
+        "turno": { "type": "string" },
+        "hora_inicio": { "type": "string" },
+        "hora_fim": { "type": "string" },
+        "tipo_escala": { "type": "string" },
+        "observacao": { "type": "string" },
+        "criado_por": { "type": "string" },
+        "criado_em": { "type": "string" },
+        "atualizado_em": { "type": "string" }
+      },
+      "required": ["id", "data", "setor_id", "profissional_id", "cargo_id", "turno", "hora_inicio", "hora_fim", "tipo_escala", "criado_em"]
+    },
+    "plantao_registro": {
+      "title": "PlantaoRegistro",
+      "description": "Registro de presença ou ausência no plantão",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "escala_id": { "type": "string" },
+        "data": { "type": "string" },
+        "profissional_id": { "type": "string" },
+        "setor_id": { "type": "string" },
+        "situacao": { "type": "string" },
+        "motivo_ausencia": { "type": "string" },
+        "observacao": { "type": "string" },
+        "observacao_adm": { "type": "string" },
+        "registrado_por": { "type": "string" },
+        "horario_registro": { "type": "string" },
+        "registrado_em": { "type": "string" }
+      },
+      "required": ["id", "escala_id", "data", "profissional_id", "setor_id", "situacao", "registrado_em"]
+    },
+    "periodo_afastamento": {
+      "title": "PeriodoAfastamento",
+      "description": "Período de férias ou atestado médico",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "tipo": { "type": "string", "enum": ["FÉRIAS", "ATESTADO"] },
+        "profissional_id": { "type": "string" },
+        "data_inicio": { "type": "string" },
+        "data_fim": { "type": "string" },
+        "observacao": { "type": "string" },
+        "observacao_adm": { "type": "string" },
+        "registrado_por": { "type": "string" },
+        "registrado_em": { "type": "string" }
+      },
+      "required": ["id", "tipo", "profissional_id", "data_inicio", "data_fim", "registrado_em"]
+    },
+    "registro_auditoria": {
+      "title": "RegistroAuditoria",
+      "description": "Log de auditoria de alterações operacionais",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "usuario_id": { "type": "string" },
+        "usuario_nome": { "type": "string" },
+        "usuario_login": { "type": "string" },
+        "data_hora": { "type": "string" },
+        "acao": { "type": "string" },
+        "tabela": { "type": "string" },
+        "registro_id": { "type": "string" },
+        "detalhes": { "type": "string" },
+        "ip": { "type": "string" },
+        "valor_anterior": { "type": "string" },
+        "novo_valor": { "type": "string" }
+      },
+      "required": ["id", "data_hora", "acao", "tabela", "registro_id", "detalhes"]
+    },
+    "troca_plantao": {
+      "title": "TrocaPlantao",
+      "description": "Solicitação e homologação de trocas e vagas de plantão",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "tipo": { "type": "string" },
+        "status": { "type": "string" },
+        "escalaOrigemId": { "type": "string" },
+        "dataOrigem": { "type": "string" },
+        "turnoOrigem": { "type": "string" },
+        "setorOrigemId": { "type": "string" },
+        "setorOrigemNome": { "type": "string" },
+        "solicitanteId": { "type": "string" },
+        "solicitanteNome": { "type": "string" },
+        "solicitanteCargo": { "type": "string" },
+        "destinatarioId": { "type": "string" },
+        "destinatarioNome": { "type": "string" },
+        "escalaDestinoId": { "type": "string" },
+        "dataDestino": { "type": "string" },
+        "turnoDestino": { "type": "string" },
+        "voluntarioId": { "type": "string" },
+        "voluntarioNome": { "type": "string" },
+        "voluntarioCargo": { "type": "string" },
+        "motivo": { "type": "string" },
+        "criadoEm": { "type": "string" },
+        "respondidoEm": { "type": "string" },
+        "aprovadoPor": { "type": "string" },
+        "aprovadoEm": { "type": "string" },
+        "motivoRecusa": { "type": "string" }
+      },
+      "required": ["id", "tipo", "status", "escalaOrigemId", "dataOrigem", "turnoOrigem", "solicitanteId", "criadoEm"]
+    },
+    "restricao_indisponibilidade": {
+      "title": "RestricaoIndisponibilidade",
+      "description": "Coleta de indisponibilidade prévia de colaboradores",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "profissional_id": { "type": "string" },
+        "profissional_nome": { "type": "string" },
+        "data": { "type": "string" },
+        "periodo": { "type": "string" },
+        "motivo": { "type": "string" },
+        "status": { "type": "string" },
+        "criado_em": { "type": "string" },
+        "registrado_por": { "type": "string" }
+      },
+      "required": ["id", "profissional_id", "data", "periodo", "motivo", "criado_em"]
+    },
+    "ciencia_escala": {
+      "title": "CienciaEscala",
+      "description": "Registro de ciência e conformidade da escala pelo colaborador",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "profissional_id": { "type": "string" },
+        "profissional_nome": { "type": "string" },
+        "mes_ano": { "type": "string" },
+        "data_hora": { "type": "string" },
+        "registrado_por": { "type": "string" },
+        "ip": { "type": "string" }
+      },
+      "required": ["id", "profissional_id", "mes_ano", "data_hora"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "user",
+      "description": "Contas de usuário e credenciais do sistema"
+    },
+    "/setores/{setorId}": {
+      "schema": "setor",
+      "description": "Setores e alas hospitalares"
+    },
+    "/cargos/{cargoId}": {
+      "schema": "cargo",
+      "description": "Cargos e especialidades da equipe"
+    },
+    "/profissionais/{profissionalId}": {
+      "schema": "profissional",
+      "description": "Profissionais de saúde cadastrados"
+    },
+    "/escalas/{escalaId}": {
+      "schema": "escala",
+      "description": "Escalas de plantão programadas"
+    },
+    "/plantoes/{plantaoId}": {
+      "schema": "plantao_registro",
+      "description": "Registros de presença/ausência de plantões"
+    },
+    "/afastamentos/{afastamentoId}": {
+      "schema": "periodo_afastamento",
+      "description": "Férias e atestados médicos cadastrados"
+    },
+    "/auditoria/{auditoriaId}": {
+      "schema": "registro_auditoria",
+      "description": "Trilha de auditoria das operações"
+    },
+    "/trocas/{trocaId}": {
+      "schema": "troca_plantao",
+      "description": "Workflow de trocas, permutas e vagas de plantão"
+    },
+    "/indisponibilidades/{indisponibilidadeId}": {
+      "schema": "restricao_indisponibilidade",
+      "description": "Restrições e indisponibilidades prévias"
+    },
+    "/ciencias/{cienciaId}": {
+      "schema": "ciencia_escala",
+      "description": "Ciências confirmadas da escala mensal"
+    }
+  }
+}
